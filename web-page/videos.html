@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clobster OS | Video Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #00f2fe; 
+            --glass: rgba(255, 255, 255, 0.03); 
+            --bg: #090a0f;
+        }
+        
+        body { 
+            margin: 0; 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            flex-direction: column;
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
+        .nav-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            background: rgba(9, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
+        .nav-links a:hover { opacity: 1; color: var(--accent); }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .main-container { flex: 1; display: flex; overflow: hidden; }
+        
+        .panel { flex: 1; padding: 25px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
+        .panel-center { flex: 0.7; background: rgba(0, 242, 254, 0.02); justify-content: center; align-items: center; display: flex; }
+        
+        /* Herramientas de Inventario */
+        .panel-tools {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.02);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px; width: 100%; box-sizing: border-box; }
+        .scroll { flex: 1; overflow-y: auto; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        td { padding: 12px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .btn-action { background: var(--accent); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px; transition: 0.3s; }
+        .btn-action:hover { box-shadow: 0 0 20px var(--accent); transform: scale(1.02); }
+
+        .batch-tag { color: var(--accent); font-size: 0.7rem; font-weight: 600; margin-top: 15px; display: block; border-left: 2px solid var(--accent); padding-left: 10px; }
+        
+        select.mini-select { background: none; color: rgba(255,255,255,0.5); border: none; font-size: 0.75rem; outline: none; cursor: pointer; }
+        
+        input[type="checkbox"] { cursor: pointer; accent-color: var(--accent); }
+
+        /* Botón de Sincronización */
+        .btn-sync {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-sync:hover { background: var(--accent); color: black; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-container">
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="nav-links">
+            <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+            <a href="/convert/images">Imágenes</a>
+            <a href="/convert/songs">Música</a>
+            <a href="/convert/autotaskQueue">Tareas Automaticas</a>
+            <a href="/convert/mixedjob">Tareas Mixtas</a>
+            <a href="/convert/logs">Registros</a>
+            <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin:0">📂 Inventario (ROW)</h3>
+                <button onclick="syncDatabase()" class="btn-sync">🔄 Sincronizar Disco</button>
+            </div>
+            
+            <div class="panel-tools">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="master-select" onclick="toggleAll(this)">
+                    <label for="master-select" style="font-size: 0.75rem; opacity: 0.6; cursor:pointer;">Seleccionar todo</label>
+                </div>
+                <select id="sort-order" class="mini-select" onchange="loadRaw()">
+                    <option value="asc">Nombre A-Z</option>
+                    <option value="desc">Nombre Z-A</option>
+                </select>
+            </div>
+
+            <div class="scroll">
+                <table><tbody id="raw-body"></tbody></table>
+            </div>
+        </div>
+
+        <div class="panel-center">
+            <div class="glass-card" style="max-width: 400px;">
+                <h2 style="margin-top:0">🎬 Video Engine</h2>
+                <p style="opacity:0.5; font-size: 0.8rem;">Seleccione la calidad de salida:</p>
+                
+                <select id="action-select" class="btn-action quality-select" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--accent); appearance: none; text-align: center; outline: none;">
+                    <optgroup label="Reducción (Downscale)" style="background: #1a1c23;">
+                        <option value="video_900p">HD+ (900p)</option>
+                        <option value="video_720p">HD (720p)</option>
+                        <option value="video_480p">SD (480p)</option>
+                        <option value="video_360p">Low (360p)</option>
+                    </optgroup>
+                    <optgroup label="Escalado (Upscale)" style="background: #1a1c23;">
+                        <option value="video_1440p">2K (1440p)</option>
+                        <option value="video_1080p">FHD (1080p)</option>
+                    </optgroup>
+                </select>
+
+                <button class="btn-action" onclick="processBatch()">🚀 ENVIAR AL CLÚSTER</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>✅ Salidas (OUT)</h3>
+            <div class="scroll" id="out-body"></div>
+        </div>
+    </div>
+
+<script>
+    window.addEventListener('pageshow', () => {
+        const selector = document.getElementById('nav-selector');
+        const currentPath = window.location.pathname;
+        for (let option of selector.options) {
+            if (option.value === currentPath) {
+                option.selected = true;
+                break;
+            }
+        }
+    });
+
+    /**
+     * Sincronización manual de la base de datos con los archivos en disco
+     */
+    async function syncDatabase() {
+        const btn = document.querySelector('.btn-sync');
+        btn.innerText = "⏳ Sincronizando...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/dataset/sync', { method: 'POST' });
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                await loadRaw(); // Refresca la lista de archivos
+                alert("Sincronización completa: Nuevos videos detectados.");
+            }
+        } catch (error) {
+            console.error("Error de sincronización:", error);
+            alert("No se pudo conectar con el Master.");
+        } finally {
+            btn.innerText = "🔄 Sincronizar Disco";
+            btn.disabled = false;
+        }
+    }
+
+    function toggleAll(master) {
+        const checks = document.querySelectorAll('.file-check');
+        checks.forEach(c => c.checked = master.checked);
+    }
+
+    async function loadRaw() {
+        try {
+            const res = await fetch('/dataset/raw/videos');
+            const data = await res.json();
+            const sortOrder = document.getElementById('sort-order').value;
+            const body = document.getElementById('raw-body');
+            
+            if (!data.files || data.files.length === 0) {
+                body.innerHTML = '<tr><td style="opacity:0.3; text-align:center; padding:20px;">No hay archivos registrados.</td></tr>';
+                return;
+            }
+
+            data.files.sort((a, b) => {
+                return sortOrder === 'asc' 
+                    ? a.name.localeCompare(b.name) 
+                    : b.name.localeCompare(a.name);
+            });
+
+            body.innerHTML = data.files.map(f => `
+                <tr>
+                    <td width="30"><input type="checkbox" class="file-check" data-path="${f.path}"></td>
+                    <td>
+                        <span style="display:block;">${f.name}</span>
+                        <small style="opacity:0.4; font-size:0.7rem;">${f.size}</small>
+                    </td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('master-select').checked = false;
+        } catch (e) { console.error("Error cargando inventario:", e); }
+    }
+
+    async function loadOut() {
+        try {
+            const res = await fetch('/dataset/out/videos');
+            const data = await res.json();
+            const body = document.getElementById('out-body');
+            body.innerHTML = '';
+
+            const entries = Object.entries(data.structure).sort().reverse();
+            if (entries.length === 0) {
+                body.innerHTML = '<p style="opacity:0.3; text-align:center; margin-top:20px;">Esperando procesamientos...</p>';
+                return;
+            }
+
+            for (const [folder, files] of entries) {
+                body.innerHTML += `<span class="batch-tag">🕒 ${folder}</span>`;
+                files.forEach(f => {
+                    body.innerHTML += `<div style="font-size:0.75rem; padding: 5px 15px; opacity:0.6; border-bottom: 1px solid rgba(255,255,255,0.02);">📄 ${f}</div>`;
+                });
+            }
+        } catch (e) { console.error("Error cargando salidas:", e); }
+    }
+
+    async function processBatch() {
+        const action = document.getElementById('action-select').value;
+        const selected = document.querySelectorAll('.file-check:checked');
+        
+        if (selected.length === 0) {
+            alert("Por favor, selecciona archivos para procesar.");
+            return;
+        }
+
+        const now = new Date();
+	const batchId = now.toLocaleString('es-CR', { 
+	    hour12: false, 
+	    year: 'numeric', 
+	    month: '2-digit', 
+	    day: '2-digit', 
+	    hour: '2-digit', 
+	    minute: '2-digit' 
+	}).replace(/[/, :]/g, '-');
+
+        for (const check of selected) {
+            await fetch('/enqueue', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    filename: check.getAttribute('data-path'),
+                    action: action,
+                    batch_id: batchId
+                })
+            });
+        }
+        
+        alert(`Lote "${batchId}" enviado al clúster.`);
+        document.querySelectorAll('.file-check').forEach(c => c.checked = false);
+        document.getElementById('master-select').checked = false;
+        loadOut();
+    }
+
+    window.onload = () => { 
+        loadRaw(); 
+        loadOut(); 
+        setInterval(loadOut, 10000); 
+    };
+</script>
+</body>
+</html>

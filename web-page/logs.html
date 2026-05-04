@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clobster OS | System Logs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #00f2fe; --glass: rgba(255, 255, 255, 0.03); --bg: #090a0f; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; }
+        .nav-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            background: rgba(9, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
+        .nav-links a:hover { opacity: 1; color: var(--accent); }
+        
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .log-table { width: 100%; border-collapse: collapse; background: var(--glass); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .log-table th { background: rgba(255,255,255,0.05); padding: 15px; text-align: left; font-size: 0.8rem; color: var(--accent); text-transform: uppercase; }
+        .log-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 0.85rem; }
+        
+        .status-pill { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; }
+        .status-completed { background: rgba(0, 255, 157, 0.1); color: #00ff9d; }
+        .status-failed { background: rgba(255, 71, 71, 0.1); color: #ff4747; }
+        
+        .worker-tag { opacity: 0.6; font-family: monospace; background: rgba(255,255,255,0.05); padding: 2px 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-container">
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="nav-links">
+            <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+            <a href="/convert/images">Imágenes</a>
+            <a href="/convert/songs">Música</a>
+            <a href="/convert/videos">Videos</a>
+            <a href="/convert/autotaskQueue">Tareas Automaticas</a>
+            <a href="/convert/mixedjob">Tareas Mixtas</a>
+            <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <h2 style="font-weight: 200; margin-bottom: 30px;">Historial de <span style="color: var(--accent);">Procesamiento</span></h2>
+        
+        <table class="log-table">
+            <thead>
+                <tr>
+                    <th>Fecha y Hora</th>
+                    <th>ID</th>
+                    <th>Archivo</th>
+                    <th>Acción</th>
+                    <th>Worker</th>
+                    <th>Duración</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="log-body">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchLogs() {
+            const res = await fetch('/system/logs');
+            const data = await res.json();
+            const body = document.getElementById('log-body');
+            body.innerHTML = '';
+
+            data.logs.forEach(log => {
+                const statusClass = log.status === 'Completed' ? 'status-completed' : 'status-failed';
+                body.innerHTML += `
+                    <tr>
+                        <td style="opacity:0.5">${log.timestamp}</td>
+                        <td><small>${log.job_id}</small></td>
+                        <td>${log.filename}</td>
+                        <td><code style="color:var(--accent)">${log.action}</code></td>
+                        <td><span class="worker-tag">${log.worker}</span></td>
+                        <td>${log.duration_sec}s</td>
+                        <td><span class="status-pill ${statusClass}">${log.status}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.onload = fetchLogs;
+        setInterval(fetchLogs, 5000); // Actualiza cada 5 segundos
+    </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clobster OS | MixedJob Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #00f2fe; --glass: rgba(255, 255, 255, 0.03); --bg: #090a0f; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        .nav-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            background: rgba(9, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
+        .nav-links a:hover { opacity: 1; color: var(--accent); }
+
+        .main-container { flex: 1; display: flex; overflow: hidden; }
+        .panel { flex: 1; padding: 25px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
+	
+	/* Contenedor padre de la derecha */
+	.panel-right {
+	    flex: 1;
+	    padding: 20px;
+	    display: flex;
+	    flex-direction: column;
+	    height: 100vh; /* Se ajusta al alto de la pantalla */
+	    box-sizing: border-box;
+	}
+
+	/* El envoltorio que contiene las 3 tarjetas */
+	.out-wrapper {
+	    flex: 1;
+	    display: flex;
+	    flex-direction: column;
+	    gap: 15px;
+	    overflow: hidden; /* Evita que el contenedor padre se estire */
+	}
+
+	/* Cada tarjeta de categoría (Video, Audio, Imagen) */
+	.sub-out-card {
+	    flex: 1; /* Esto reparte el espacio equitativamente */
+	    background: rgba(255, 255, 255, 0.02);
+	    border: 1px solid rgba(255, 255, 255, 0.05);
+	    border-radius: 15px;
+	    display: flex;
+	    flex-direction: column;
+	    min-height: 150px; /* Altura mínima para que no desaparezcan */
+	    overflow: hidden;
+	}
+
+	/* El área específica que tendrá el scroll */
+	.sub-scroll {
+	    flex: 1;
+	    overflow-y: auto; /* Habilita el scroll individual */
+	    padding: 10px;
+	    scrollbar-width: thin; /* Para navegadores modernos */
+	    scrollbar-color: var(--accent) transparent;
+	}
+
+	/* Estilo para la barra de scroll (Chrome/Safari) */
+	.sub-scroll::-webkit-scrollbar {
+	    width: 4px;
+	}
+	.sub-scroll::-webkit-scrollbar-thumb {
+	    background: var(--accent);
+	    border-radius: 10px;
+	}
+        
+        /* Panel Central con Scroll */
+        .panel-center { flex: 1.2; background: rgba(0, 242, 254, 0.01); overflow-y: auto; padding: 25px; }
+        
+        .engine-card { 
+            background: var(--glass); 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; 
+            padding: 20px; 
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+        .engine-card h4 { margin: 0 0 15px 0; color: var(--accent); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(0,242,254,0.1); padding-bottom: 8px;}
+
+        .scroll { flex: 1; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        td { padding: 12px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        /* Botón Maestro */
+        .btn-master { 
+            background: var(--accent); 
+            color: black; 
+            border: none; 
+            padding: 20px; 
+            border-radius: 15px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 10px; 
+            transition: 0.3s; 
+            font-size: 1rem; 
+            letter-spacing: 1px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .btn-master:hover { box-shadow: 0 0 30px var(--accent); transform: translateY(-2px); }
+
+        .batch-tag { color: var(--accent); font-size: 0.7rem; font-weight: 600; margin-top: 15px; display: block; border-left: 2px solid var(--accent); padding-left: 10px; }
+        .btn-sync { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; transition: 0.3s; }
+        .btn-sync:hover { background: var(--accent); color: black; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-container">
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="nav-links">
+            <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+            <a href="/convert/images">Imágenes</a>
+            <a href="/convert/songs">Música</a>
+            <a href="/convert/videos">Videos</a>
+            <a href="/convert/autotaskQueue">Tareas Automaticas</a>
+            <a href="/convert/logs">Registros</a>
+            <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin:0">📂 Dataset Mixto (ROW)</h3>
+                <button onclick="syncDatabase()" class="btn-sync">🔄 Sincronizar Disco</button>
+            </div>
+            <div class="scroll" style="margin-top: 15px;">
+                <table><tbody id="raw-body"></tbody></table>
+            </div>
+        </div>
+
+        <div class="panel-center">
+            <h3 style="margin-top:0; text-align: center; color: var(--accent);">⚙️ Configuración del Lote Mixto</h3>
+            
+            <div class="engine-card">
+                <h4>🎬 Video Engine Config</h4>
+                <select id="action-video" class="nav-dropdown" style="width: 100%;">
+		    <optgroup label="Reducción (Downscale)" style="background: #1a1c23;">
+                        <option value="video_900p">HD+ (900p)</option>
+                        <option value="video_720p">HD (720p)</option>
+                        <option value="video_480p">SD (480p)</option>
+                        <option value="video_360p">Low (360p)</option>
+                    </optgroup>
+                    <optgroup label="Escalado (Upscale)" style="background: #1a1c23;">
+                        <option value="video_1440p">2K (1440p)</option>
+                        <option value="video_1080p">FHD (1080p)</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="engine-card">
+                <h4>🎵 Audio Engine Config</h4>
+                <select id="action-audio" class="nav-dropdown" style="width: 100%;">
+		    <optgroup label="Popular & Móvil" style="background: #1a1c23;">
+                        <option value="audio_mp3_320">MP3 - 320kbps (HQ)</option>
+                        <option value="audio_mp3_128">MP3 - 128kbps (Lite)</option>
+                        <option value="audio_aac">AAC (Standard)</option>
+                        <option value="audio_m4a">M4A (Apple)</option>
+                    </optgroup>
+                    <optgroup label="Modernos & HQ" style="background: #1a1c23;">
+                        <option value="audio_ogg">OGG Vorbis</option>
+                        <option value="audio_opus">Opus (HQ-Low size)</option>
+                        <option value="audio_flac">FLAC (Lossless)</option>
+                        <option value="audio_aiff">AIFF (Apple HQ)</option>
+                        <option value="audio_hires_sim">LDAC / Hi-Res (96k/24b)</option>
+                    </optgroup>
+                    <optgroup label="Legacy" style="background: #1a1c23;">
+                        <option value="audio_amr">AMR (Voice)</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="engine-card">
+                <h4>🖼️ Image Engine Config</h4>
+                <select id="action-image" class="nav-dropdown" style="width: 100%;">
+		    <optgroup label="Reescalado" style="background: #1a1c23;">
+                        <option value="img_4k">Ultra HD (4K)</option>
+                        <option value="img_2k">QHD (2K)</option>
+                        <option value="img_1080p">FHD (1080p)</option>
+                        <option value="img_720p">HD (720p)</option>
+                    </optgroup>
+                    <optgroup label="Filtros" style="background: #1a1c23;">
+                        <option value="img_gray">Escala de Grises</option>
+                        <option value="img_sepia">Sepia</option>
+                        <option value="img_blur">Desenfoque</option>
+                        <option value="img_sharpen">Enfoque</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <button class="btn-master" onclick="processAllMixed()">🚀 PROCESAR TODO EL LOTE MIXTO</button>
+            <p style="text-align: center; font-size: 0.7rem; opacity: 0.4; margin-top: 15px;">
+                Tip: El sistema detectará automáticamente el tipo de archivo y lo enviará al motor correspondiente.
+            </p>
+        </div>
+
+	<div class="panel panel-right">
+	    <h3 style="margin: 0 0 15px 0; font-size: 1rem;">✅ Repositorio (OUT)</h3>
+	    <div class="out-wrapper">
+	        <div class="sub-out-card">
+		    <div class="sub-out-header" style="background: rgba(0, 242, 254, 0.05); padding: 8px; font-size: 0.7rem; font-weight: 600; color: var(--accent);">🎬 VIDEOS</div>
+	            <div class="sub-scroll" id="out-videos"></div>
+	        </div>
+        
+	        <div class="sub-out-card">
+		    <div class="sub-out-header" style="background: rgba(0, 242, 254, 0.05); padding: 8px; font-size: 0.7rem; font-weight: 600; color: var(--accent);">🎵 AUDIO</div>
+	            <div class="sub-scroll" id="out-songs"></div>
+	        </div>
+        
+	        <div class="sub-out-card">
+		    <div class="sub-out-header" style="background: rgba(0, 242, 254, 0.05); padding: 8px; font-size: 0.7rem; font-weight: 600; color: var(--accent);">🖼️ IMÁGENES</div>
+	            <div class="sub-scroll" id="out-images"></div>
+	        </div>
+	    </div>
+	</div>
+
+    </div>
+
+<script>
+    // Sincronizar selector
+    window.addEventListener('pageshow', () => {
+        const selector = document.getElementById('nav-selector');
+        for (let opt of selector.options) { if (opt.value === window.location.pathname) opt.selected = true; }
+    });
+
+    async function syncDatabase() {
+        const btn = document.querySelector('.btn-sync');
+        btn.innerText = "⏳...";
+        await fetch('/dataset/sync', { method: 'POST' });
+        await loadAll();
+        btn.innerText = "🔄 Sincronizar Disco";
+    }
+
+    async function loadAll() {
+        const body = document.getElementById('raw-body');
+        body.innerHTML = '';
+        const cats = ['videos', 'songs', 'images'];
+        const icons = {videos: '🎬', songs: '🎵', images: '🖼️'};
+
+        for (const cat of cats) {
+            const res = await fetch(`/dataset/raw/${cat}`);
+            const data = await res.json();
+            data.files.forEach(f => {
+                body.innerHTML += `
+                    <tr>
+                        <td width="30"><input type="checkbox" class="file-check" data-path="${f.path}" data-cat="${cat}"></td>
+                        <td>${icons[cat]} ${f.name} <br><small style="opacity:0.3">${f.size}</small></td>
+                    </tr>
+                `;
+            });
+        }
+        loadOut();
+    }
+
+    async function loadOut() {
+        const categories = ['videos', 'songs', 'images'];
+    
+        categories.forEach(async (cat) => {
+            try {
+                const res = await fetch(`/dataset/out/${cat}`);
+                const data = await res.json();
+                const container = document.getElementById(`out-${cat}`);
+            
+                let html = '';
+                // Ordenamos por carpetas (lotes) de más reciente a más antiguo
+                const sortedEntries = Object.entries(data.structure).sort().reverse();
+
+                if (sortedEntries.length === 0) {
+                    container.innerHTML = '<div style="opacity:0.2; font-size:0.6rem; padding:10px;">Vacío</div>';
+                    return;
+                }
+
+                sortedEntries.forEach(([folder, files]) => {
+                    // Etiqueta de lote muy compacta
+                    html += `<div class="batch-tag" style="margin-top:5px; font-size:0.6rem;">🕒 ${folder}</div>`;
+                    files.forEach(f => {
+                        html += `<div class="out-item">📄 ${f}</div>`;
+                    });
+                });
+            
+                container.innerHTML = html;
+            } catch (e) {
+                console.error(`Error cargando salida de ${cat}:`, e);
+            }
+        });
+    }
+
+    async function processAllMixed() {
+        const selected = document.querySelectorAll('.file-check:checked');
+        if (selected.length === 0) return alert("Selecciona archivos del dataset.");
+
+        const batchId = new Date().toLocaleString('es-CR').replace(/[/, :]/g, '-').slice(0, 16);
+        const actionMap = {
+            videos: document.getElementById('action-video').value,
+            songs: document.getElementById('action-audio').value,
+            images: document.getElementById('action-image').value
+        };
+
+        for (const check of selected) {
+            const cat = check.getAttribute('data-cat');
+            await fetch('/enqueue', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    filename: check.getAttribute('data-path'),
+                    action: actionMap[cat], // Filtrado inteligente
+                    batch_id: batchId
+                })
+            });
+        }
+        alert("¡Lote mixto enviado con éxito al clúster!");
+        document.querySelectorAll('.file-check').forEach(c => c.checked = false);
+        loadOut();
+    }
+
+    window.onload = loadAll;
+    setInterval(loadOut, 10000);
+</script>
+</body>
+</html>

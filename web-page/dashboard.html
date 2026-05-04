@@ -1,0 +1,307 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clobster OS | Monitor de Recursos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #00f2fe;
+            --master-gold: #ffd700;
+            --danger: #ff4b2b;
+            --glass: rgba(255, 255, 255, 0.05);
+            --bg: #090a0f;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- AJUSTE DE LAYOUT GLOBAL --- */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column; /* Cambiamos a columna para que el nav esté arriba */
+            overflow: hidden;
+        }
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+        .nav-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            background: rgba(9, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
+        .nav-links a:hover { opacity: 1; color: var(--accent); }
+
+        /* --- NUEVO CONTENEDOR PARA EL DASHBOARD --- */
+        .dashboard-wrapper {
+            display: flex;
+            flex: 1; /* Ocupa todo el espacio restante debajo del nav */
+            overflow: hidden;
+        }
+
+        /* --- DISEÑO DE COLUMNAS ORIGINAL --- */
+        .sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.02);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: radial-gradient(circle at top right, #1b2735 0%, #090a0f 100%);
+        }
+
+        /* --- Lista de Nodos (Izquierda) --- */
+        .sidebar-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+        }
+
+        .worker-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 3px solid transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .worker-item:hover { background: rgba(255,255,255,0.05); }
+        
+        /* Estilo activo general */
+        .worker-item.active {
+            background: rgba(0, 242, 254, 0.1);
+            border-left-color: var(--accent);
+        }
+
+        /* Estilo especial para MASTER cuando está activo */
+        .worker-item.active.master-item {
+            background: rgba(255, 215, 0, 0.1);
+            border-left-color: var(--master-gold);
+        }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .online-dot { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+        .offline-dot { background: var(--danger); }
+        
+        /* Dot dorado para Master Online */
+        .master-online-dot { background: var(--master-gold); box-shadow: 0 0 10px var(--master-gold); }
+
+        /* --- Panel de Detalles (Derecha) --- */
+        .detail-header { margin-bottom: 30px; }
+        .large-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 30px;
+            padding: 40px;
+            min-height: 400px;
+        }
+
+        .graph-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .metric-box h4 { margin: 0 0 10px 0; opacity: 0.6; font-size: 0.8rem; letter-spacing: 1px; }
+        
+        .big-bar-bg { background: rgba(255,255,255,0.05); height: 20px; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
+        .big-bar-fill { height: 100%; transition: width 0.5s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+
+        .large-history {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 120px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+        }
+        .large-dot { flex: 1; border-radius: 2px 2px 0 0; transition: height 0.3s; }
+
+        .offline-message {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--danger);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-container">
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="nav-links">
+            <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-wrapper">
+        <aside class="sidebar">
+            <div style="padding: 0 25px 20px 25px;">
+                <h3 style="margin:0; font-size: 1rem; letter-spacing: 2px;">NODOS</h3>
+                <small style="opacity:0.5;">Clobster OS Cluster</small>
+            </div>
+            <div id="worker-list">
+                </div>
+        </aside>
+
+        <main class="main-content">
+            <div id="detail-view">
+                </div>
+        </main>
+    </div>
+
+<script>
+    let selectedNodeId = 'MASTER'; 
+    let nodeRegistry = {}; 
+
+    async function updateData() {
+        try {
+            const r = await fetch('/status');
+            const data = await r.json();
+
+            // Sincronizar estado online/offline
+            Object.keys(nodeRegistry).forEach(id => nodeRegistry[id].online = false);
+
+            for (const [id, info] of Object.entries(data.workers)) {
+                nodeRegistry[id] = {
+                    ...info,
+                    online: true
+                };
+            }
+
+            renderSidebar();
+            renderDetails();
+
+        } catch (e) { console.error("Error telemétrico:", e); }
+    }
+
+    function renderSidebar() {
+        const list = document.getElementById('worker-list');
+        list.innerHTML = '';
+
+        // Lógica de ordenamiento: MASTER siempre de primero, luego el resto alfabéticamente
+        const keys = Object.keys(nodeRegistry).sort((a, b) => {
+            if (a === 'MASTER') return -1;
+            if (b === 'MASTER') return 1;
+            return a.localeCompare(b);
+        });
+
+        keys.forEach(id => {
+            const node = nodeRegistry[id];
+            const isMaster = (id === 'MASTER');
+            const div = document.createElement('div');
+            
+            // Asignar clases según el tipo de nodo y estado
+            div.className = `worker-item ${selectedNodeId === id ? 'active' : ''} ${isMaster ? 'master-item' : ''}`;
+            div.onclick = () => { selectedNodeId = id; renderDetails(); renderSidebar(); };
+
+            // Definir color del punto de estado
+            let statusClass = node.online ? 'online-dot' : 'offline-dot';
+            if (isMaster && node.online) statusClass = 'master-online-dot';
+
+            div.innerHTML = `
+                <div>
+                    <span class="status-dot ${statusClass}"></span>
+                    <span style="font-size: 0.9rem; font-weight: ${selectedNodeId === id ? '600' : '400'}; color: ${isMaster ? 'var(--master-gold)' : 'inherit'}">
+                        ${isMaster ? '👑 MASTER' : id}
+                    </span>
+                </div>
+                <small style="opacity:0.4; font-size: 0.7rem;">${node.online ? node.current.cpu + '%' : 'OFF'}</small>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function renderDetails() {
+        const view = document.getElementById('detail-view');
+        const node = nodeRegistry[selectedNodeId];
+
+        if (!node) {
+            view.innerHTML = '<div class="large-card"><h3>Selecciona un nodo para iniciar</h3></div>';
+            return;
+        }
+
+        if (!node.online) {
+            view.innerHTML = `
+                <div class="detail-header">
+                    <h1>NODO: <span style="color:var(--danger)">${selectedNodeId}</span></h1>
+                </div>
+                <div class="large-card">
+                    <div class="offline-message">
+                        <div style="font-size: 4rem;">⚠️</div>
+                        <h2>NODO DESCONECTADO O APAGADO</h2>
+                        <p style="opacity:0.5">Sin latidos recibidos en el Master.</p>
+                    </div>
+                </div>`;
+            return;
+        }
+
+        const isMaster = (selectedNodeId === 'MASTER');
+        const themeColor = isMaster ? 'var(--master-gold)' : 'var(--accent)';
+
+        const cpuHistory = node.history.map(h => `<div class="large-dot" style="height:${h.cpu}% ; background:${themeColor}; opacity:${(h.cpu/100)+0.2}"></div>`).reverse().join('');
+        const ramHistory = node.history.map(h => `<div class="large-dot" style="height:${h.ram}% ; background:#a18cd1; opacity:${(h.ram/100)+0.2}"></div>`).reverse().join('');
+
+        view.innerHTML = `
+            <div class="detail-header">
+                <h1 style="margin:0; letter-spacing: 5px; color: ${isMaster ? 'var(--master-gold)' : 'white'}">
+                    ${isMaster ? '👑 MASTER NODE' : '🛠️ WORKER: ' + selectedNodeId}
+                </h1>
+                <p style="opacity:0.5; font-size: 0.8rem;">ESTADO: ONLINE | TAREA: ${node.current.last_job}</p>
+            </div>
+
+            <div class="large-card" style="border-color: ${isMaster ? 'rgba(255, 215, 0, 0.2)' : 'rgba(255, 255, 255, 0.1)'}">
+                <div class="graph-container">
+                    <div class="metric-box">
+                        <h4>UTILIZACIÓN DE CPU (${node.current.cpu}%)</h4>
+                        <div class="big-bar-bg"><div class="big-bar-fill" style="width:${node.current.cpu}%; background:${themeColor}"></div></div>
+                        <div class="large-history">${cpuHistory}</div>
+                    </div>
+
+                    <div class="metric-box">
+                        <h4>MEMORIA RAM EN USO (${node.current.ram}%)</h4>
+                        <div class="big-bar-bg"><div class="big-bar-fill" style="width:${node.current.ram}%; background:#a18cd1"></div></div>
+                        <div class="large-history">${ramHistory}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.75rem; opacity: 0.4;">
+                    Timestamp: ${node.current.time} | Orquestador Clobster OS
+                </div>
+            </div>
+        `;
+    }
+
+    setInterval(updateData, 1000);
+    updateData();
+</script>
+
+</body>
+</html>
