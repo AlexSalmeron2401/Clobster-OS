@@ -10,6 +10,7 @@ import sqlite3
 import uuid
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
@@ -37,20 +38,24 @@ def master_telemetry_loop():
             print(f"⚠️ Error en auto-monitoreo Master: {e}")
         time.sleep(1)
 
-DATASET_PATH = "RUTA DEL PROYECTO"
-DB_PATH = "clobster_dataset.db"
-WEB_PATH = "../web-page/"
+DATASET_PATH = "Ruta de la carpeta dataset"
+DB_PATH = "clobster_dataset.db" #Nombre de la base de datos
+WEB_PATH = "../web-page/" #Ruta donde están los archivos html
 
 app = FastAPI(title="Clobster OS - Master Node")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-r = redis.Redis(host='localhost', port="PUERTO POR DEFECTO", db=0, decode_responses=True)
+#Esto expone la carpeta del dataset bajo la ruta web /media
+app.mount("/media", StaticFiles(directory=DATASET_PATH), name="media")
+
+r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 threading.Thread(target=master_telemetry_loop, daemon=True).start()
 
@@ -294,4 +299,4 @@ async def websocket_status(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port="PUERTO POR DEFECTO")
+    uvicorn.run(app, host="0.0.0.0", port=8000)
