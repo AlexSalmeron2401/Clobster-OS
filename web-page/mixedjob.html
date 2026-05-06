@@ -5,8 +5,24 @@
     <title>Clobster OS | MixedJob Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2fe; --glass: rgba(255, 255, 255, 0.03); --bg: #090a0f; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+	:root {
+            --accent: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --bg: rgb(10, 112, 114);
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
         
         .nav-container {
             width: 100%;
@@ -17,16 +33,42 @@
             box-sizing: border-box;
             position: sticky;
             top: 0;
-            background: rgba(9, 10, 15, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(15px);
             z-index: 1000;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 2px solid rgba(200, 200, 200, 0.8);
         }
 
         .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
-        .nav-links a:hover { opacity: 1; color: var(--accent); }
+        .nav-links { display: flex; gap: 10px; }
+
+        .nav-links a {
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 2px solid rgba(200, 200, 200, 0.8);
+            padding: 5px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            text-align: center;
+        }
+
+        .nav-links a:hover {
+            /* Al pasar el mouse, el borde "se enciende" con el color del logo */
+            border-color: var(--accent);
+            color: var(--accent);
+
+            background: rgba(0, 242, 254, 0.1); /* Brillo interno muy suave */
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); /* Efecto de resplandor neón */
+
+            transform: translateY(-2px); /* Pequeña elevación para dar feedback */
+        }
 
         .main-container { flex: 1; display: flex; overflow: hidden; }
         .panel { flex: 1; padding: 25px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
@@ -62,6 +104,81 @@
 	    overflow: hidden;
 	}
 
+	/* Estilos para el Visor Universal */
+	.preview-container {
+	    width: 100%;
+	    height: 300px;
+	    background: rgba(0,0,0,0.4);
+	    border-radius: 20px;
+	    border: 1px dashed var(--accent);
+	    display: flex;
+	    align-items: center;
+	    justify-content: center;
+	    overflow: hidden;
+	    margin-bottom: 25px;
+	    position: relative;
+	}
+
+	#preview-img, #preview-video, #preview-audio {
+	    display: none; /* Ocultos por defecto */
+	    max-width: 100%;
+	    max-height: 100%;
+	}
+
+	#preview-audio {
+	    width: 80%;
+	    height: 50px;
+	}
+
+	.file-link {
+	    color: white;
+	    text-decoration: none;
+	    cursor: pointer;
+	    transition: 0.2s;
+	}
+
+	.file-link:hover {
+	    color: var(--accent);
+	    text-shadow: 0 0 8px var(--accent);
+	}
+
+        /* Herramientas de Inventario */
+        .panel-tools {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.02);
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Fila seleccionada */
+        .selected-row {
+            background: rgba(0, 242, 254, 0.15) !important;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* Animación sutil para el long-press */
+        .pressing {
+            background: rgba(255, 255, 255, 0.05);
+            transition: background 1s linear;
+        }
+
+        /* Estilo para los checkboxes en modo selección */
+        .file-check {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+	.out-item {
+	    font-size: 0.75rem;
+	    padding: 5px 15px;
+	    opacity: 0.6;
+	    border-bottom: 1px solid rgba(255,255,255,0.02);
+	}
+
 	/* El área específica que tendrá el scroll */
 	.sub-scroll {
 	    flex: 1;
@@ -93,6 +210,9 @@
         }
         .engine-card h4 { margin: 0 0 15px 0; color: var(--accent); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(0,242,254,0.1); padding-bottom: 8px;}
 
+	.btn-action { background: var(--accent); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px; transition: 0.3s; }
+        .btn-action:hover { box-shadow: 0 0 20px var(--accent); transform: scale(1.02); }
+
         .scroll { flex: 1; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         td { padding: 12px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -123,36 +243,53 @@
 <body>
 
     <nav class="nav-container">
-        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS | Tareas Mixtas</div>
         <div class="nav-links">
-            <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+            <a href="/convert/index">Inicio</a>
             <a href="/convert/images">Imágenes</a>
             <a href="/convert/songs">Música</a>
             <a href="/convert/videos">Videos</a>
             <a href="/convert/autotaskQueue">Tareas Automaticas</a>
             <a href="/convert/logs">Registros</a>
-            <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+            <a href="/dashboard">Dashboard</a>
         </div>
     </nav>
 
     <div class="main-container">
         <div class="panel">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin:0">📂 Dataset Mixto (ROW)</h3>
+                <h3 style="margin:0">📂Galería</h3>
                 <button onclick="syncDatabase()" class="btn-sync">🔄 Sincronizar Disco</button>
             </div>
-            <div class="scroll" style="margin-top: 15px;">
+            <div class="panel-tools">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="master-select" onclick="toggleAll(this)">
+                    <label for="master-select" style="font-size: 0.75rem; opacity: 0.8; cursor:pointer;">Seleccionar todo</label>
+                </div>
+                <select id="sort-order" class="mini-select" onchange="loadRaw()">
+                    <option value="asc">Nombre A-Z</option>
+                    <option value="desc">Nombre Z-A</option>
+                </select>
+            </div>
+            <div class="scroll">
                 <table><tbody id="raw-body"></tbody></table>
             </div>
         </div>
 
         <div class="panel-center">
+	   <div class="preview-container">
+	        <p id="placeholder-text" style="opacity:0.3">Selecciona un archivo para previsualizar</p>
+	        <img id="preview-img" src="" alt="Vista previa">
+		<video id="preview-video" controls controlsList="nodownload"></video>
+		<audio id="preview-audio" controls="" controlslist="nodownload noplaybackrate"></audio>
+	    </div>
+
             <h3 style="margin-top:0; text-align: center; color: var(--accent);">⚙️ Configuración del Lote Mixto</h3>
             
             <div class="engine-card">
                 <h4>🎬 Video Engine Config</h4>
-                <select id="action-video" class="nav-dropdown" style="width: 100%;">
-		    <optgroup label="Reducción (Downscale)" style="background: #1a1c23;">
+		<select id="action-video" class="btn-action quality-select" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--accent); appearance: none; text-align: center; outline: none;">
+                    <optgroup label="Reducción (Downscale)" style="background: #1a1c23;">
                         <option value="video_900p">HD+ (900p)</option>
                         <option value="video_720p">HD (720p)</option>
                         <option value="video_480p">SD (480p)</option>
@@ -162,12 +299,15 @@
                         <option value="video_1440p">2K (1440p)</option>
                         <option value="video_1080p">FHD (1080p)</option>
                     </optgroup>
+                    <optgroup label="Herramientas de Audio" style="background: #1a1c23;">
+                        <option value="video_extract_audio">🎵 Extraer Audio (MP3 HQ)</option>
+                    </optgroup>
                 </select>
             </div>
 
             <div class="engine-card">
                 <h4>🎵 Audio Engine Config</h4>
-                <select id="action-audio" class="nav-dropdown" style="width: 100%;">
+                <select id="action-audio" class="btn-action quality-select" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--accent); appearance: none; text-align: center; outline: none;">
 		    <optgroup label="Popular & Móvil" style="background: #1a1c23;">
                         <option value="audio_mp3_320">MP3 - 320kbps (HQ)</option>
                         <option value="audio_mp3_128">MP3 - 128kbps (Lite)</option>
@@ -189,7 +329,7 @@
 
             <div class="engine-card">
                 <h4>🖼️ Image Engine Config</h4>
-                <select id="action-image" class="nav-dropdown" style="width: 100%;">
+                <select id="action-image" class="btn-action quality-select" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--accent); appearance: none; text-align: center; outline: none;">
 		    <optgroup label="Reescalado" style="background: #1a1c23;">
                         <option value="img_4k">Ultra HD (4K)</option>
                         <option value="img_2k">QHD (2K)</option>
@@ -212,7 +352,7 @@
         </div>
 
 	<div class="panel panel-right">
-	    <h3 style="margin: 0 0 15px 0; font-size: 1rem;">✅ Repositorio (OUT)</h3>
+	    <h3 style="margin: 0 0 15px 0; font-size: 1rem;">✅ Resultados</h3>
 	    <div class="out-wrapper">
 	        <div class="sub-out-card">
 		    <div class="sub-out-header" style="background: rgba(0, 242, 254, 0.05); padding: 8px; font-size: 0.7rem; font-weight: 600; color: var(--accent);">🎬 VIDEOS</div>
@@ -248,6 +388,53 @@
         btn.innerText = "🔄 Sincronizar Disco";
     }
 
+    function toggleAll(master) {
+        const checks = document.querySelectorAll('.file-check');
+        checks.forEach(c => c.checked = master.checked);
+    }
+
+    let longPressTimer;
+    let multiSelectMode = false;
+    let isLongPressActive = false;
+
+    function checkMultiSelectState() {
+        const totalSelected = document.querySelectorAll('.file-check:checked').length;
+        if (totalSelected === 0) {
+            multiSelectMode = false;
+        } else if (totalSelected > 1) {
+            multiSelectMode = true; // Se asegura de que se active al pasar de 1
+        }
+    }
+
+    // Función para limpiar todas las selecciones
+    function clearAllSelections() {
+        document.querySelectorAll('.file-check').forEach(cb => cb.checked = false);
+        document.querySelectorAll('tr').forEach(tr => tr.classList.remove('selected-row'));
+    }
+
+    // Función central de selección
+    function selectFile(row, checkbox, isLongPress) {
+        if (isLongPress) {
+            checkbox.checked = true;
+            row.classList.add('selected-row');
+        } else {
+            if (!multiSelectMode) {
+                clearAllSelections();
+                checkbox.checked = true;
+            } else {
+                checkbox.checked = !checkbox.checked; // En modo múltiple, el clic corto también hace toggle
+            }
+        }
+
+        // Feedback visual de la fila
+        if (checkbox.checked) row.classList.add('selected-row');
+        else row.classList.remove('selected-row');
+
+        // Si no hay nada seleccionado, desactivamos el modo múltiple
+        const totalSelected = document.querySelectorAll('.file-check:checked').length;
+        if (totalSelected === 0) multiSelectMode = false;
+    }
+
     async function loadAll() {
         const body = document.getElementById('raw-body');
         body.innerHTML = '';
@@ -259,9 +446,17 @@
             const data = await res.json();
             data.files.forEach(f => {
                 body.innerHTML += `
-                    <tr>
+		    <tr onmousedown="startPress(this)" 
+                        onmouseup="endPress(this, 'ROW/${f.path}', '${cat}')" 
+                        onmouseleave="cancelPress(this)"
+                        ontouchstart="startPress(this)" 
+                        ontouchend="endPress(this, 'ROW/${f.path}', '${cat}')">
                         <td width="30"><input type="checkbox" class="file-check" data-path="${f.path}" data-cat="${cat}"></td>
-                        <td>${icons[cat]} ${f.name} <br><small style="opacity:0.3">${f.size}</small></td>
+                        <td>
+                            ${icons[cat]} 
+                            <a class="file-link" onclick="updatePreview('ROW/${f.path}', '${cat}')">${f.name}</a>
+                            <br><small style="opacity:0.3">${f.size}</small>
+                        </td>
                     </tr>
                 `;
             });
@@ -271,15 +466,13 @@
 
     async function loadOut() {
         const categories = ['videos', 'songs', 'images'];
-    
+
         categories.forEach(async (cat) => {
             try {
                 const res = await fetch(`/dataset/out/${cat}`);
                 const data = await res.json();
                 const container = document.getElementById(`out-${cat}`);
-            
                 let html = '';
-                // Ordenamos por carpetas (lotes) de más reciente a más antiguo
                 const sortedEntries = Object.entries(data.structure).sort().reverse();
 
                 if (sortedEntries.length === 0) {
@@ -288,17 +481,19 @@
                 }
 
                 sortedEntries.forEach(([folder, files]) => {
-                    // Etiqueta de lote muy compacta
-                    html += `<div class="batch-tag" style="margin-top:5px; font-size:0.6rem;">🕒 ${folder}</div>`;
+                    html += `<div class="batch-tag">🕒 ${folder}</div>`;
                     files.forEach(f => {
-                        html += `<div class="out-item">📄 ${f}</div>`;
+                        // CORRECCIÓN: Uso de backticks y movido dentro del loop
+                        const resultPath = `out/${cat}/${folder}/${f}`; 
+                    
+                        html += `
+                            <div class="out-item" style="font-size:0.75rem; padding: 5px 15px; opacity:0.6; border-bottom: 1px solid rgba(255,255,255,0.02);">
+                                📄 <a class="file-link" onclick="updatePreview('${resultPath}', '${cat}')">${f}</a>
+                            </div>`;
                     });
                 });
-            
                 container.innerHTML = html;
-            } catch (e) {
-                console.error(`Error cargando salida de ${cat}:`, e);
-            }
+            } catch (e) { console.error(`Error en ${cat}:`, e); }
         });
     }
 
@@ -328,6 +523,76 @@
         alert("¡Lote mixto enviado con éxito al clúster!");
         document.querySelectorAll('.file-check').forEach(c => c.checked = false);
         loadOut();
+    }
+
+    function updatePreview(path, cat) {
+        const img = document.getElementById('preview-img');
+        const video = document.getElementById('preview-video');
+        const audio = document.getElementById('preview-audio');
+        const placeholder = document.getElementById('placeholder-text');
+
+        [img, video, audio, placeholder].forEach(el => el.style.display = 'none');
+        video.pause(); video.src = "";
+        audio.pause(); audio.src = "";
+
+        // CORRECCIÓN: Uso de backticks para la URL
+        const fullUrl = `/media/${path}`; 
+
+        if (cat === 'images') {
+            img.src = fullUrl;
+            img.style.display = 'block';
+        } 
+        else if (cat === 'videos') {
+            video.volume = 0.1;
+            video.src = fullUrl;
+            video.style.display = 'block';
+            video.load(); // Fuerza la carga de metadatos
+        } 
+        else if (cat === 'songs') {
+            audio.volume = 0.1;
+            audio.src = fullUrl;
+            audio.style.display = 'block';
+            audio.load(); // Sincroniza el búfer de audio
+        }
+    }
+
+    function startPress(row) {
+        isLongPressActive = false;
+        row.classList.add('pressing');
+        longPressTimer = setTimeout(() => {
+            isLongPressActive = true;
+            multiSelectMode = true;
+            const cb = row.querySelector('.file-check');
+            cb.checked = true;
+            row.classList.add('selected-row');
+            if (navigator.vibrate) navigator.vibrate(60);
+        }, 800);
+    }
+
+    function endPress(row, path, cat) {
+        clearTimeout(longPressTimer);
+        row.classList.remove('pressing');
+
+        if (!isLongPressActive) {
+            const cb = row.querySelector('.file-check');
+            if (!multiSelectMode) {
+                updatePreview(path, cat); //
+                clearAllSelections();
+                cb.checked = true;
+                row.classList.add('selected-row');
+            } else {
+                cb.checked = !cb.checked;
+                cb.checked ? row.classList.add('selected-row') : row.classList.remove('selected-row');
+            }
+        }
+        const selected = document.querySelectorAll('.file-check:checked').length;
+        if (selected === 0) multiSelectMode = false;
+        isLongPressActive = false;
+    }
+
+    function clearAllSelections() {
+        document.querySelectorAll('.file-check').forEach(cb => cb.checked = false);
+        document.querySelectorAll('tr').forEach(tr => tr.classList.remove('selected-row'));
     }
 
     window.onload = loadAll;

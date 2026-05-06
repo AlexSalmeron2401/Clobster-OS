@@ -10,18 +10,19 @@
             --accent: #00f2fe;
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.1);
-            --bg: radial-gradient(circle at top, #1b2735 0%, #090a0f 100%);
+            --bg: rgb(10, 112, 114);
         }
 
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
-            background: var(--bg) fixed;
+	    background: var(--bg) fixed;
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+	    justify-content: center; 
         }
 
         .nav-container { 
@@ -33,21 +34,61 @@
             box-sizing: border-box;
             position: sticky;
             top: 0;
-            background: rgba(9, 10, 15, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(15px);
             z-index: 1000;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 2px solid rgba(200, 200, 200, 0.8);
         }
 
         .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
         .nav-links { display: flex; gap: 30px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
-        .nav-links a:hover { opacity: 1; color: var(--accent); }
 
-        .hero { text-align: center; margin-top: 80px; max-width: 800px; padding: 0 20px; }
-        .hero h1 { font-size: 5.5rem; font-weight: 400; margin: 0; letter-spacing: 2px; }
+        .nav-links a {
+	    text-decoration: none;
+	    background: rgba(255, 255, 255, 0.05);
+	    color: white;
+	    border: 2px solid rgba(200, 200, 200, 0.8);
+	    padding: 10px 25px;
+	    border-radius: 8px;
+	    backdrop-filter: blur(5px);
+	    font-weight: 600;
+	    font-size: 0.85rem;
+	    text-transform: uppercase;
+	    letter-spacing: 2px;
+    
+	    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	    display: inline-block;
+	}
+	.nav-links a:hover {
+	    /* Al pasar el mouse, el borde "se enciende" con el color del logo */
+	    border-color: var(--accent); 
+	    color: var(--accent);
+    
+	    background: rgba(0, 242, 254, 0.1); /* Brillo interno muy suave */
+	    box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); /* Efecto de resplandor neón */
+    
+	    transform: translateY(-2px); /* Pequeña elevación para dar feedback */
+	}
+
+        .hero {
+	    text-align: center;
+	    margin-top: 80px;
+	    max-width: 800px;
+	    padding: 0 20px;
+	}
+        .hero h1 {
+	    font-size: 5.5rem;
+	    font-weight: 400;
+	    margin: 0;
+	    letter-spacing: 2px;
+	}
         .hero span { color: var(--accent); font-weight: 800; }
-	.subtitle { opacity: 0.5; letter-spacing: 5px; font-size: 0.9rem; margin-top: 10px; }
+	.subtitle {
+	    opacity: 0.5;
+	    letter-spacing: 5px;
+	    font-size: 0.9rem;
+	    margin-top: 10px;
+	}
 
         .modules-grid {
             display: grid;
@@ -98,7 +139,7 @@
     <nav class="nav-container">
         <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
         <div class="nav-links">
-	    <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+	    <a href="/dashboard">Dashboard</a>
         </div>
     </nav>
 
@@ -167,7 +208,7 @@
             <h2>Ingeniería Distribuida</h2>
             <p>
                 El corazón del sistema reside en una cola de mensajes gestionada por <strong>Redis</strong>, permitiendo que nodos con diferentes capacidades de cómputo, desde procesadores modernos hasta hardware legacy, 
-                colaboren en tiempo real. La comunicación se realiza mediante latidos de telemetría que proporcionan visibilidad total sobre el clúster.
+                colaboren en tiempo real. La comunicación se realiza mediante telemetría que proporcionan visibilidad total sobre el clúster.
             </p>
         </div>
 

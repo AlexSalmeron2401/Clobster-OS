@@ -5,10 +5,11 @@
     <title>Clobster OS | Image Suite</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --accent: #00f2fe; 
-            --glass: rgba(255, 255, 255, 0.03); 
-            --bg: #090a0f;
+        :root {
+            --accent: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --bg: rgb(10, 112, 114);
         }
         
         body { 
@@ -22,31 +23,59 @@
             overflow: hidden; 
         }
 
-        .nav-container { 
-            width: 100%; 
-            display: flex; 
+        .nav-container {
+            width: 100%;
+            display: flex;
             justify-content: space-between;
-            align-items: center; 
+            align-items: center;
             padding: 20px 50px;
             box-sizing: border-box;
             position: sticky;
             top: 0;
-            background: rgba(9, 10, 15, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(15px);
             z-index: 1000;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 2px solid rgba(200, 200, 200, 0.8);
         }
 
         .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
-        .nav-links a:hover { opacity: 1; color: var(--accent); }
+        .nav-links { display: flex; gap: 10px; }
 
+        .nav-links a {
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 2px solid rgba(200, 200, 200, 0.8);
+            padding: 5px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            transition: 0.3s;
+            display: inline-block;
+            text-align: center;
+        }
 
-        /* --- CONTENEDOR --- */
+        .nav-links a:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(0, 242, 254, 0.1);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+            transform: translateY(-2px);
+        }
+
         .main-container { flex: 1; display: flex; overflow: hidden; }
         .panel { flex: 1; padding: 25px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
-        .panel-center { flex: 0.7; background: rgba(0, 242, 254, 0.02); justify-content: center; align-items: center; display: flex; }
+
+        .panel-center {
+            flex: 1.2;
+            background: rgba(0, 242, 254, 0.01);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            overflow-y: auto;
+        }
         
         .panel-tools {
             display: flex;
@@ -59,6 +88,19 @@
             border: 1px solid rgba(255,255,255,0.05);
         }
 
+        .out-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .selected-row {
+            background: rgba(0, 242, 254, 0.15) !important;
+            border-left: 3px solid var(--accent) !important;
+            opacity: 1 !important;
+        }
+
+        .pressing { background: rgba(255, 255, 255, 0.05); transition: background 1s linear; }
         .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px; width: 100%; box-sizing: border-box; }
         .scroll { flex: 1; overflow-y: auto; }
         
@@ -69,34 +111,31 @@
         .btn-action:hover { box-shadow: 0 0 20px var(--accent); transform: scale(1.02); }
 
         .batch-tag { color: var(--accent); font-size: 0.7rem; font-weight: 600; margin-top: 15px; display: block; border-left: 2px solid var(--accent); padding-left: 10px; }
-        .mini-select { background: none; color: rgba(255,255,255,0.5); border: none; font-size: 0.75rem; outline: none; cursor: pointer; }
-        
-        /* Botón de Sincronización */
-        .btn-sync {
-            background: none;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: 0.3s;
+        .mini-select { background-color: var(--bg); color: white; border: 1px solid var(--accent); font-size: 0.75rem; outline: none; }
+
+        .preview-container {
+            width: 100%; height: 350px; background: rgba(0,0,0,0.4); border-radius: 20px;
+            border: 1px dashed var(--accent); display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
-        .btn-sync:hover { background: var(--accent); color: black; }
+
+        #main-preview { max-width: 100%; max-height: 100%; object-fit: contain; display: none; }
+        .preview-placeholder { opacity: 0.3; font-size: 0.9rem; }
+        .file-link { color: white; text-decoration: none; cursor: pointer; }
+        .btn-sync { background: none; border: 1px solid var(--accent); color: var(--accent); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <nav class="nav-container">
-        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS | Motor de Imágenes</div>
         <div class="nav-links">
-	    <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+	    <a href="/convert/index">Inicio</a>
             <a href="/convert/songs">Música</a>
             <a href="/convert/videos">Videos</a>
             <a href="/convert/autotaskQueue">Tareas Automaticas</a>
             <a href="/convert/mixedjob">Tareas Mixtas</a>
             <a href="/convert/logs">Registros</a>
-            <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+            <a href="/dashboard">Dashboard</a>
         </div>
     </nav>
 
@@ -110,7 +149,7 @@
             <div class="panel-tools">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="master-select" onclick="toggleAll(this)">
-                    <label for="master-select" style="font-size: 0.75rem; opacity: 0.6; cursor:pointer;">Todo</label>
+                    <label for="master-select" style="font-size: 0.75rem; opacity: 0.8; cursor:pointer;">Seleccionar todo</label>
                 </div>
                 <select id="sort-order" class="mini-select" onchange="loadRaw()">
                     <option value="asc">Nombre A-Z</option>
@@ -124,7 +163,12 @@
         </div>
 
         <div class="panel-center">
-            <div class="glass-card" style="max-width: 400px;">
+            <div class="preview-container" id="preview-frame">
+                <p class="preview-placeholder" id="placeholder-text">Selecciona una imagen para previsualizar</p>
+                <img id="main-preview" src="" alt="Preview">
+            </div>
+
+            <div class="glass-card" style="max-width: 100%;">
                 <h2 style="margin-top:0">🖼️ Motor de Imágenes</h2>
                 <p style="opacity:0.5; font-size: 0.8rem;">Acción a realizar:</p>
                 <select id="action-select" class="btn-action" style="appearance:none; text-align:center; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--accent);">
@@ -150,41 +194,34 @@
             <div class="scroll" id="out-body"></div>
         </div>
     </div>
-
 <script>
-    // Sincronizar menú de navegación
-    window.addEventListener('pageshow', () => {
-        const selector = document.getElementById('nav-selector');
-        for (let opt of selector.options) { if (opt.value === window.location.pathname) opt.selected = true; }
-    });
-
-    /**
-     * NUEVA FUNCIÓN: Sincronización en caliente con el disco
-     */
     async function syncDatabase() {
         const btn = document.querySelector('.btn-sync');
-        btn.innerText = "⏳ Sincronizando...";
-        btn.disabled = true;
-
+        btn.innerText = "⏳ Sincronizando..."; btn.disabled = true;
         try {
             const res = await fetch('/dataset/sync', { method: 'POST' });
-            const data = await res.json();
-            
-            if (data.status === 'success') {
-                await loadRaw(); // Recargamos la lista visual
-                alert("Sincronización exitosa. El Master ha detectado los nuevos archivos.");
-            }
-        } catch (error) {
-            console.error("Fallo de red:", error);
-            alert("Error: No se pudo contactar al Master.");
-        } finally {
-            btn.innerText = "🔄 Sincronizar Disco";
-            btn.disabled = false;
-        }
+            if (res.ok) { await loadRaw(); alert("Sincronización exitosa."); }
+        } catch (e) { alert("Error de red."); } finally { btn.innerText = "🔄 Sincronizar Disco"; btn.disabled = false; }
     }
 
-    function toggleAll(master) {
-        document.querySelectorAll('.file-check').forEach(c => c.checked = master.checked);
+    function toggleAll(master) { document.querySelectorAll('.file-check').forEach(c => c.checked = master.checked); }
+
+    let longPressTimer, multiSelectMode = false, isLongPressActive = false;
+
+    function clearAllSelections() {
+        document.querySelectorAll('.file-check').forEach(cb => cb.checked = false);
+        document.querySelectorAll('tr, .out-item').forEach(el => el.classList.remove('selected-row'));
+    }
+
+    function selectFile(row, checkbox, isLongPress) {
+        if (isLongPress) { checkbox.checked = true; row.classList.add('selected-row'); } 
+        else {
+            if (!multiSelectMode) { clearAllSelections(); checkbox.checked = true; } 
+            else { checkbox.checked = !checkbox.checked; }
+        }
+        if (checkbox.checked) row.classList.add('selected-row');
+        else row.classList.remove('selected-row');
+        if (document.querySelectorAll('.file-check:checked').length === 0) multiSelectMode = false;
     }
 
     async function loadRaw() {
@@ -193,12 +230,10 @@
         const sortOrder = document.getElementById('sort-order').value;
         data.files.sort((a, b) => sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
         document.getElementById('raw-body').innerHTML = data.files.map(f => `
-            <tr>
-                <td width="30"><input type="checkbox" class="file-check" data-path="${f.path}"></td>
-                <td>${f.name} <br><small style="opacity:0.4">${f.size}</small></td>
-            </tr>
-        `).join('');
-        document.getElementById('master-select').checked = false;
+            <tr onmousedown="startPress(this)" onmouseup="endPress(this, 'ROW/${f.path}')" ontouchstart="startPress(this)" ontouchend="endPress(this, 'ROW/${f.path}')" style="cursor: pointer;">
+                <td width="30"><input type="checkbox" class="file-check" data-path="ROW/${f.path}" onclick="event.stopPropagation()"></td>
+                <td><span class="file-link">${f.name}</span><br><small style="opacity:0.4;">${f.size}</small></td>
+            </tr>`).join('');
     }
 
     async function loadOut() {
@@ -208,7 +243,13 @@
         body.innerHTML = '';
         Object.entries(data.structure).sort().reverse().forEach(([folder, files]) => {
             body.innerHTML += `<span class="batch-tag">🕒 ${folder}</span>`;
-            files.forEach(f => body.innerHTML += `<div style="font-size:0.75rem; padding:5px 15px; opacity:0.6; border-bottom:1px solid rgba(255,255,255,0.02);">📄 ${f}</div>`);
+            files.forEach(f => {
+                const fullPath = `out/images/${folder}/${f}`;
+                body.innerHTML += `
+                <div class="out-item" style="font-size:0.75rem; padding:8px 15px; opacity:0.8; border-bottom:1px solid rgba(255,255,255,0.02);" onclick="updatePreview('${fullPath}', this)">
+                    📄 <span class="file-link">${f}</span>
+                </div>`;
+            });
         });
     }
 
@@ -216,17 +257,63 @@
         const action = document.getElementById('action-select').value;
         const selected = document.querySelectorAll('.file-check:checked');
         if (selected.length === 0) return alert("Selecciona imágenes.");
-        const batchId = new Date().toLocaleString('es-CR').replace(/[/, :]/g, '-').slice(0, 16);
+        const batchId = new Date().toLocaleString('es-CR', { hour12: false }).replace(/[/, :]/g, '-').slice(0, 16);
+        
         for (const check of selected) {
+            // FIX: Limpiamos 'ROW/' solo para el envío, para evitar 404
+            const realPath = check.getAttribute('data-path').replace('ROW/', '');
             await fetch('/enqueue', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ filename: check.getAttribute('data-path'), action: action, batch_id: batchId })
+                body: JSON.stringify({ filename: realPath, action: action, batch_id: batchId })
             });
         }
-        alert("Lote enviado.");
-        document.querySelectorAll('.file-check').forEach(c => c.checked = false);
-        loadOut();
+        alert("Lote enviado."); clearAllSelections(); loadOut();
+    }
+
+    function updatePreview(path, element) {
+        const img = document.getElementById('main-preview');
+        const placeholder = document.getElementById('placeholder-text');
+
+        // Feedback visual para el panel derecho
+        if (element && element.classList.contains('out-item')) {
+            document.querySelectorAll('.out-item').forEach(el => el.classList.remove('selected-row'));
+            element.classList.add('selected-row');
+        }
+
+        // Cargamos la ruta completa usando el endpoint /media/
+        img.src = `/media/${path}`; 
+        img.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+
+        img.onerror = () => {
+            img.style.display = 'none';
+            if (placeholder) { placeholder.style.display = 'block'; placeholder.innerText = "Error en previsualización"; }
+        };
+    }
+
+    function startPress(row) {
+        isLongPressActive = false; row.classList.add('pressing');
+        longPressTimer = setTimeout(() => {
+            isLongPressActive = true; multiSelectMode = true;
+            selectFile(row, row.querySelector('.file-check'), true);
+            row.classList.remove('pressing');
+        }, 800);
+    }
+
+    function endPress(row, path) {
+        clearTimeout(longPressTimer); row.classList.remove('pressing');
+        if (!isLongPressActive) {
+            const cb = row.querySelector('.file-check');
+            if (!multiSelectMode) { 
+                updatePreview(path); // Aquí 'path' ya trae el ROW/ necesario para la previsualización[cite: 1]
+                clearAllSelections(); 
+                cb.checked = true; row.classList.add('selected-row'); 
+            } 
+            else { cb.checked = !cb.checked; if (cb.checked) row.classList.add('selected-row'); else row.classList.remove('selected-row'); }
+        }
+        if (document.querySelectorAll('.file-check:checked').length === 0) multiSelectMode = false;
+        isLongPressActive = false;
     }
 
     window.onload = () => { loadRaw(); loadOut(); setInterval(loadOut, 10000); };

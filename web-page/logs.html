@@ -5,8 +5,25 @@
     <title>Clobster OS | System Logs</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2fe; --glass: rgba(255, 255, 255, 0.03); --bg: #090a0f; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; }
+
+        :root {
+            --accent: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --bg: rgb(10, 112, 114);
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
         .nav-container {
             width: 100%;
             display: flex;
@@ -16,17 +33,74 @@
             box-sizing: border-box;
             position: sticky;
             top: 0;
-            background: rgba(9, 10, 15, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(15px);
             z-index: 1000;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 2px solid rgba(200, 200, 200, 0.8);
         }
 
         .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
-        .nav-links a:hover { opacity: 1; color: var(--accent); }
-        
+        .nav-links { display: flex; gap: 10px; }
+
+        .nav-links a {
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 2px solid rgba(200, 200, 200, 0.8);
+            padding: 5px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            text-align: center;
+        }
+
+        .nav-links a:hover {
+            /* Al pasar el mouse, el borde "se enciende" con el color del logo */
+            border-color: var(--accent);
+            color: var(--accent);
+
+            background: rgba(0, 242, 254, 0.1); /* Brillo interno muy suave */
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); /* Efecto de resplandor neón */
+
+            transform: translateY(-2px); /* Pequeña elevación para dar feedback */
+        }
+        .filter-container {
+	    background: rgba(255, 255, 255, 0.02);
+	    padding: 15px 25px;
+	    border-radius: 15px;
+	    margin-bottom: 20px;
+	    border: 1px solid rgba(255, 255, 255, 0.05);
+	    display: flex;
+	    align-items: center;
+	    gap: 15px;
+	}
+
+	.filter-container label {
+	    font-size: 0.8rem;
+	    color: var(--accent);
+	    text-transform: uppercase;
+	    letter-spacing: 1px;
+	}
+
+	.filter-select {
+	    background: #1a1c23;
+	    color: white;
+	    border: 1px solid rgba(255, 255, 255, 0.1);
+	    padding: 8px 15px;
+	    border-radius: 8px;
+	    outline: none;
+	    cursor: pointer;
+	    font-family: 'Inter', sans-serif;
+	}
+
+	.filter-select:focus {
+	    border-color: var(--accent);
+	}
         .main-content { flex: 1; padding: 40px; overflow-y: auto; }
         .log-table { width: 100%; border-collapse: collapse; background: var(--glass); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
         .log-table th { background: rgba(255,255,255,0.05); padding: 15px; text-align: left; font-size: 0.8rem; color: var(--accent); text-transform: uppercase; }
@@ -42,21 +116,32 @@
 <body>
 
     <nav class="nav-container">
-        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS | LOGS</div>
         <div class="nav-links">
-            <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+            <a href="/convert/index">Inicio</a>
             <a href="/convert/images">Imágenes</a>
             <a href="/convert/songs">Música</a>
             <a href="/convert/videos">Videos</a>
             <a href="/convert/autotaskQueue">Tareas Automaticas</a>
             <a href="/convert/mixedjob">Tareas Mixtas</a>
-            <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+            <a href="/dashboard">Dashboard</a>
         </div>
     </nav>
 
     <div class="main-content">
         <h2 style="font-weight: 200; margin-bottom: 30px;">Historial de <span style="color: var(--accent);">Procesamiento</span></h2>
-        
+
+	<div class="filter-container">
+        <label>🔍 Filtrar por tipo:</label>
+        <select id="task-filter" class="filter-select" onchange="renderLogs()">
+            <option value="all">Todos</option>
+            <option value="image">🖼️ Imágenes</option>
+            <option value="video">🎬 Video</option>
+            <option value="song">🎵 Música</option>
+            <option value="auto">⚡ Automáticas</option>
+        </select>
+    	</div>
+
         <table class="log-table">
             <thead>
                 <tr>
@@ -75,30 +160,56 @@
     </div>
 
     <script>
-        async function fetchLogs() {
-            const res = await fetch('/system/logs');
-            const data = await res.json();
-            const body = document.getElementById('log-body');
-            body.innerHTML = '';
 
-            data.logs.forEach(log => {
-                const statusClass = log.status === 'Completed' ? 'status-completed' : 'status-failed';
-                body.innerHTML += `
-                    <tr>
-                        <td style="opacity:0.5">${log.timestamp}</td>
-                        <td><small>${log.job_id}</small></td>
-                        <td>${log.filename}</td>
-                        <td><code style="color:var(--accent)">${log.action}</code></td>
-                        <td><span class="worker-tag">${log.worker}</span></td>
-                        <td>${log.duration_sec}s</td>
-                        <td><span class="status-pill ${statusClass}">${log.status}</span></td>
-                    </tr>
-                `;
-            });
-        }
+	let allLogs = []; // Variable global para guardar los datos
 
-        window.onload = fetchLogs;
-        setInterval(fetchLogs, 5000); // Actualiza cada 5 segundos
+	async function fetchLogs() {
+	    try {
+	        const res = await fetch('/system/logs');
+	        const data = await res.json();
+	        allLogs = data.logs; // Guardamos los logs originales
+	        renderLogs(); // Dibujamos la tabla
+	    } catch (e) {
+	        console.error("Error cargando logs:", e);
+	    }
+	}
+
+	function renderLogs() {
+	    const filter = document.getElementById('task-filter').value;
+	    const body = document.getElementById('log-body');
+	    body.innerHTML = '';
+
+	    // Aplicamos la lógica de filtrado inteligente
+	    const filteredLogs = allLogs.filter(log => {
+	        if (filter === 'all') return true;
+	        if (filter === 'image') return log.action.includes('img_');
+	        if (filter === 'video') return log.action.includes('video_');
+	        if (filter === 'song') return log.action.includes('audio_');
+	        // Filtramos por el prefijo "AUTO" en el ID que definimos en autotaskQueue
+	        if (filter === 'auto') return log.action.includes('AUTO_');
+	        return true;
+	    });
+
+	    filteredLogs.forEach(log => {
+	        const statusClass = log.status === 'Completed' ? 'status-completed' : 'status-failed';
+	        body.innerHTML += `
+	            <tr>
+	                <td style="opacity:0.5">${log.timestamp}</td>
+	                <td><small>${log.job_id}</small></td>
+	                <td>${log.filename}</td>
+	                <td><code style="color:var(--accent)">${log.action}</code></td>
+	                <td><span class="worker-tag">${log.worker}</span></td>
+	                <td>${log.duration_sec}s</td>
+	                <td><span class="status-pill ${statusClass}">${log.status}</span></td>
+	            </tr>
+	        `;
+	    });
+	}
+
+	window.onload = fetchLogs;
+	setInterval(fetchLogs, 5000); // Actualiza datos cada 5 segundos respetando el filtro actual
+
+
     </script>
 </body>
 </html>

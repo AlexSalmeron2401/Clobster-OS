@@ -5,12 +5,12 @@
     <title>Clobster OS | Video Suite</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --accent: #00f2fe; 
-            --glass: rgba(255, 255, 255, 0.03); 
-            --bg: #090a0f;
-        }
-        
+        :root {
+            --accent: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --bg: rgb(10, 112, 114);
+        }        
         body { 
             margin: 0; 
             background: var(--bg); 
@@ -31,23 +31,90 @@
             box-sizing: border-box;
             position: sticky;
             top: 0;
-            background: rgba(9, 10, 15, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(15px);
             z-index: 1000;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 2px solid rgba(200, 200, 200, 0.8);
         }
 
         .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
-        .nav-links a:hover { opacity: 1; color: var(--accent); }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-links a {
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 2px solid rgba(200, 200, 200, 0.8);
+            padding: 5px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            text-align: center;
+        }
+
+        .nav-links a:hover {
+            /* Al pasar el mouse, el borde "se enciende" con el color del logo */
+            border-color: var(--accent);
+            color: var(--accent);
+
+            background: rgba(0, 242, 254, 0.1); /* Brillo interno muy suave */
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); /* Efecto de resplandor neón */
+
+            transform: translateY(-2px); /* Pequeña elevación para dar feedback */
+        }
 
         /* --- CONTENEDOR PRINCIPAL --- */
         .main-container { flex: 1; display: flex; overflow: hidden; }
         
         .panel { flex: 1; padding: 25px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; }
-        .panel-center { flex: 0.7; background: rgba(0, 242, 254, 0.02); justify-content: center; align-items: center; display: flex; }
+
+	/* Modifica la clase existente */
+	.panel-center { 
+	    flex: 1.5; /* Un poco más ancho para el video */
+	    display: flex; 
+	    flex-direction: column; 
+	    gap: 20px; 
+	    padding: 20px; 
+	    overflow-y: auto; 
+	}
         
+	/* Añade estas nuevas reglas */
+	.preview-container {
+	    width: 100%;
+	    height: 350px;
+	    background: rgba(0,0,0,0.4);
+	    border-radius: 20px;
+	    border: 1px dashed var(--accent);
+	    display: flex;
+	    align-items: center;
+	    justify-content: center;
+	    overflow: hidden;
+	    position: relative;
+	}
+
+	#main-video {
+	    width: 100%;
+	    height: 100%;
+	    display: none; /* Se oculta hasta que se seleccione uno */
+	    background: black;
+	}
+
+	.file-link {
+	    color: white;
+	    text-decoration: none;
+	    cursor: pointer;
+	    transition: 0.2s;
+	}
+
+	.file-link:hover {
+	    color: var(--accent);
+	    text-shadow: 0 0 8px var(--accent);
+	}
+
         /* Herramientas de Inventario */
         .panel-tools {
             display: flex;
@@ -58,6 +125,24 @@
             border-radius: 12px;
             margin: 15px 0;
             border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Fila seleccionada */
+        .selected-row {
+            background: rgba(0, 242, 254, 0.15) !important;
+            border-left: 3px solid var(--accent);
+        }
+
+        /* Animación sutil para el long-press */
+        .pressing {
+            background: rgba(255, 255, 255, 0.05);
+            transition: background 1s linear;
+        }
+
+        /* Estilo para los checkboxes en modo selección */
+        .file-check {
+            transform: scale(1.2);
+            cursor: pointer;
         }
 
         .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 30px; width: 100%; box-sizing: border-box; }
@@ -71,7 +156,7 @@
 
         .batch-tag { color: var(--accent); font-size: 0.7rem; font-weight: 600; margin-top: 15px; display: block; border-left: 2px solid var(--accent); padding-left: 10px; }
         
-        select.mini-select { background: none; color: rgba(255,255,255,0.5); border: none; font-size: 0.75rem; outline: none; cursor: pointer; }
+        select.mini-select { background-color: var(--bg); color: white; border: 1px solid var(--accent); font-size: 0.75rem; outline: none; cursor: pointer; }
         
         input[type="checkbox"] { cursor: pointer; accent-color: var(--accent); }
 
@@ -92,29 +177,29 @@
 <body>
 
     <nav class="nav-container">
-        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS | Motor de Video</div>
         <div class="nav-links">
-            <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+            <a href="/convert/index">Inicio</a>
             <a href="/convert/images">Imágenes</a>
             <a href="/convert/songs">Música</a>
             <a href="/convert/autotaskQueue">Tareas Automaticas</a>
             <a href="/convert/mixedjob">Tareas Mixtas</a>
             <a href="/convert/logs">Registros</a>
-            <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+            <a href="/dashboard">Dashboard</a>
         </div>
     </nav>
 
     <div class="main-container">
         <div class="panel">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin:0">📂 Inventario (ROW)</h3>
+                <h3 style="margin:0">📂Galería</h3>
                 <button onclick="syncDatabase()" class="btn-sync">🔄 Sincronizar Disco</button>
             </div>
             
             <div class="panel-tools">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <input type="checkbox" id="master-select" onclick="toggleAll(this)">
-                    <label for="master-select" style="font-size: 0.75rem; opacity: 0.6; cursor:pointer;">Seleccionar todo</label>
+                    <label for="master-select" style="font-size: 0.75rem; opacity: 0.8; cursor:pointer;">Seleccionar todo</label>
                 </div>
                 <select id="sort-order" class="mini-select" onchange="loadRaw()">
                     <option value="asc">Nombre A-Z</option>
@@ -127,30 +212,41 @@
             </div>
         </div>
 
-        <div class="panel-center">
-            <div class="glass-card" style="max-width: 400px;">
-                <h2 style="margin-top:0">🎬 Video Engine</h2>
-                <p style="opacity:0.5; font-size: 0.8rem;">Seleccione la calidad de salida:</p>
-                
-                <select id="action-select" class="btn-action quality-select" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--accent); appearance: none; text-align: center; outline: none;">
-                    <optgroup label="Reducción (Downscale)" style="background: #1a1c23;">
-                        <option value="video_900p">HD+ (900p)</option>
-                        <option value="video_720p">HD (720p)</option>
-                        <option value="video_480p">SD (480p)</option>
-                        <option value="video_360p">Low (360p)</option>
-                    </optgroup>
-                    <optgroup label="Escalado (Upscale)" style="background: #1a1c23;">
-                        <option value="video_1440p">2K (1440p)</option>
-                        <option value="video_1080p">FHD (1080p)</option>
-                    </optgroup>
-                </select>
+	<div class="panel-center">
+	    <div class="preview-container">
+	        <p id="placeholder-text" style="opacity:0.3">Selecciona un video para previsualizar</p>
+		<video id="main-video" controls controlsList="nodownload"></video>
+	        <video id="main-video" controls preload="metadata">
+	            Tu navegador no soporta el reproductor de video.
+	        </video>
+	    </div>
 
-                <button class="btn-action" onclick="processBatch()">🚀 ENVIAR AL CLÚSTER</button>
-            </div>
-        </div>
+	    <div class="glass-card">
+	        <h2 style="margin-top:0">🎬 Video Engine</h2>
+	        <p style="opacity:0.5; font-size: 0.8rem;">Seleccione la calidad de salida:</p>
+        
+	        <select id="action-select" class="btn-action quality-select" style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--accent); appearance: none; text-align: center; outline: none;">
+	            <optgroup label="Reducción (Downscale)" style="background: #1a1c23;">
+	                <option value="video_900p">HD+ (900p)</option>
+	                <option value="video_720p">HD (720p)</option>
+	                <option value="video_480p">SD (480p)</option>
+	                <option value="video_360p">Low (360p)</option>
+	            </optgroup>
+	            <optgroup label="Escalado (Upscale)" style="background: #1a1c23;">
+	                <option value="video_1440p">2K (1440p)</option>
+	                <option value="video_1080p">FHD (1080p)</option>
+	            </optgroup>
+		    <optgroup label="Herramientas de Audio" style="background: #1a1c23;">
+		        <option value="video_extract_audio">🎵 Extraer Audio (MP3 HQ)</option>
+		    </optgroup>
+	        </select>
+
+	        <button class="btn-action" onclick="processBatch()">🚀 ENVIAR AL CLÚSTER</button>
+	    </div>
+	</div>
 
         <div class="panel">
-            <h3>✅ Salidas (OUT)</h3>
+            <h3>✅Resultados</h3>
             <div class="scroll" id="out-body"></div>
         </div>
     </div>
@@ -197,6 +293,48 @@
         checks.forEach(c => c.checked = master.checked);
     }
 
+    let longPressTimer;
+    let multiSelectMode = false;
+    let isLongPressActive = false;
+
+    function checkMultiSelectState() {
+        const totalSelected = document.querySelectorAll('.file-check:checked').length;
+        if (totalSelected === 0) {
+            multiSelectMode = false;
+        } else if (totalSelected > 1) {
+            multiSelectMode = true; // Se asegura de que se active al pasar de 1
+        }
+    }
+
+    // Función para limpiar todas las selecciones
+    function clearAllSelections() {
+        document.querySelectorAll('.file-check').forEach(cb => cb.checked = false);
+        document.querySelectorAll('tr').forEach(tr => tr.classList.remove('selected-row'));
+    }
+
+    // Función central de selección
+    function selectFile(row, checkbox, isLongPress) {
+        if (isLongPress) {
+            checkbox.checked = true;
+            row.classList.add('selected-row');
+        } else {
+            if (!multiSelectMode) {
+                clearAllSelections();
+                checkbox.checked = true;
+            } else {
+                checkbox.checked = !checkbox.checked; // En modo múltiple, el clic corto también hace toggle
+            }
+        }
+
+        // Feedback visual de la fila
+        if (checkbox.checked) row.classList.add('selected-row');
+        else row.classList.remove('selected-row');
+
+        // Si no hay nada seleccionado, desactivamos el modo múltiple
+        const totalSelected = document.querySelectorAll('.file-check:checked').length;
+        if (totalSelected === 0) multiSelectMode = false;
+    }
+
     async function loadRaw() {
         try {
             const res = await fetch('/dataset/raw/videos');
@@ -217,10 +355,16 @@
 
             body.innerHTML = data.files.map(f => `
                 <tr>
-                    <td width="30"><input type="checkbox" class="file-check" data-path="${f.path}"></td>
+     	 	<tr onmousedown="startPress(this)"
+                    onmouseup="endPress(this, 'ROW/${f.path}')"
+                    onmouseleave="cancelPress(this)"
+                    ontouchstart="startPress(this)"
+                    ontouchend="endPress(this, 'ROW/${f.path}')"
+                    style="cursor: pointer; transition: 0.2s;">
+                    <td width="30"><input type="checkbox" class="file-check" data-path="${f.path}"onclick="event.stopPropagation()"></td>
                     <td>
-                        <span style="display:block;">${f.name}</span>
-                        <small style="opacity:0.4; font-size:0.7rem;">${f.size}</small>
+			<span class="file-link">${f.name}</span>
+                        <br><small style="opacity:0.4; font-size:0.7rem;">${f.size}</small>
                     </td>
                 </tr>
             `).join('');
@@ -229,28 +373,25 @@
         } catch (e) { console.error("Error cargando inventario:", e); }
     }
 
-    async function loadOut() {
-        try {
-            const res = await fetch('/dataset/out/videos');
-            const data = await res.json();
-            const body = document.getElementById('out-body');
-            body.innerHTML = '';
+	async function loadOut() {
+	    try {
+	        const res = await fetch('/dataset/out/videos');
+	        const data = await res.json();
+	        const body = document.getElementById('out-body');
+	        body.innerHTML = '';
 
-            const entries = Object.entries(data.structure).sort().reverse();
-            if (entries.length === 0) {
-                body.innerHTML = '<p style="opacity:0.3; text-align:center; margin-top:20px;">Esperando procesamientos...</p>';
-                return;
-            }
-
-            for (const [folder, files] of entries) {
-                body.innerHTML += `<span class="batch-tag">🕒 ${folder}</span>`;
-                files.forEach(f => {
-                    body.innerHTML += `<div style="font-size:0.75rem; padding: 5px 15px; opacity:0.6; border-bottom: 1px solid rgba(255,255,255,0.02);">📄 ${f}</div>`;
-                });
-            }
-        } catch (e) { console.error("Error cargando salidas:", e); }
-    }
-
+	        Object.entries(data.structure).sort().reverse().forEach(([folder, files]) => {
+	            body.innerHTML += `<span class="batch-tag">🕒 ${folder}</span>`;
+	            files.forEach(f => {
+	                const resultPath = `out/videos/${folder}/${f}`;
+	                body.innerHTML += `
+	                    <div style="font-size:0.75rem; padding: 5px 15px; opacity:0.6; border-bottom: 1px solid rgba(255,255,255,0.02);">
+	                        📄 <a class="file-link" onclick="updatePreview('${resultPath}')">${f}</a>
+	                    </div>`;
+	            });
+	        });
+	    } catch (e) { console.error("Error cargando salidas:", e); }
+	}
     async function processBatch() {
         const action = document.getElementById('action-select').value;
         const selected = document.querySelectorAll('.file-check:checked');
@@ -260,15 +401,7 @@
             return;
         }
 
-        const now = new Date();
-	const batchId = now.toLocaleString('es-CR', { 
-	    hour12: false, 
-	    year: 'numeric', 
-	    month: '2-digit', 
-	    day: '2-digit', 
-	    hour: '2-digit', 
-	    minute: '2-digit' 
-	}).replace(/[/, :]/g, '-');
+	const batchId = new Date().toLocaleString('es-CR', { hour12: false }).replace(/[/, :]/g, '-').replace(/ /g, '_').slice(0, 16);
 
         for (const check of selected) {
             await fetch('/enqueue', {
@@ -286,6 +419,68 @@
         document.querySelectorAll('.file-check').forEach(c => c.checked = false);
         document.getElementById('master-select').checked = false;
         loadOut();
+    }
+
+    function updatePreview(path) {
+        const video = document.getElementById('main-video');
+        const placeholder = document.getElementById('placeholder-text');
+        video.volume = 0.1;
+        // Construimos la URL usando el mount /media del Master
+        video.src = `/media/${path}`;
+        video.style.display = 'block';
+        placeholder.style.display = 'none';
+    
+        // Reproducir automáticamente al cargar
+        //video.play().catch(e => console.log("Auto-play bloqueado por el navegador"));
+    }
+
+    function startPress(row) {
+        isLongPressActive = false; // Resetear al iniciar
+        row.classList.add('pressing');
+
+        longPressTimer = setTimeout(() => {
+            isLongPressActive = true; // Bloqueamos el clic corto posterior
+            multiSelectMode = true;   // Activamos modo múltiple
+
+            const checkbox = row.querySelector('.file-check');
+            selectFile(row, checkbox, true);
+
+            row.classList.remove('pressing');
+            if (navigator.vibrate) navigator.vibrate(60); // Feedback táctil
+        }, 800); // Bajé a 800ms para que se sienta más responsivo
+    }
+
+    function endPress(row, path) {
+        clearTimeout(longPressTimer);
+        row.classList.remove('pressing');
+
+        // SI NO fue un clic largo, procesamos como clic normal
+        if (!isLongPressActive) {
+            const checkbox = row.querySelector('.file-check');
+
+            if (!multiSelectMode) {
+                // En modo normal: Previsualiza y selecciona solo uno
+                updatePreview(path);
+                clearAllSelections();
+                checkbox.checked = true;
+                row.classList.add('selected-row');
+            } else {
+                // En modo múltiple: Solo hace toggle
+                checkbox.checked = !checkbox.checked;
+                if (checkbox.checked) row.classList.add('selected-row');
+                else row.classList.remove('selected-row');
+            }
+        }
+
+        // Verificamos si aún quedan elementos seleccionados para mantener el modo
+        checkMultiSelectState();
+
+        isLongPressActive = false; // Liberamos para el siguiente archivo
+    }
+
+    function cancelPress(row) {
+        clearTimeout(longPressTimer);
+        row.classList.remove('pressing');
     }
 
     window.onload = () => { 

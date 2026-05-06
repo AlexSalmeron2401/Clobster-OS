@@ -5,9 +5,23 @@
     <title>Clobster OS | AutoTask Queue</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2fe; --glass: rgba(255, 255, 255, 0.03); --bg: #090a0f; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
+	:root {
+            --accent: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --bg: rgb(10, 112, 114);
+        }
+        body { 
+            margin: 0; 
+            background: var(--bg);
+            color: white; 
+            font-family: 'Inter', sans-serif;
+            display: flex; 
+            flex-direction: column;
+            height: 100vh; 
+            overflow: hidden;
+        }
+
         .nav-container {
             width: 100%;
             display: flex;
@@ -17,19 +31,79 @@
             box-sizing: border-box;
             position: sticky;
             top: 0;
-            background: rgba(9, 10, 15, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(15px);
             z-index: 1000;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 2px solid rgba(200, 200, 200, 0.8);
         }
 
-        .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { color: white; text-decoration: none; font-size: 1.2rem; opacity: 0.7; transition: 0.3s; }
-        .nav-links a:hover { opacity: 1; color: var(--accent); }
+	.logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-links a {
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 2px solid rgba(200, 200, 200, 0.8);
+            padding: 5px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            text-align: center;
+        }
+
+        .nav-links a:hover {
+            /* Al pasar el mouse, el borde "se enciende" con el color del logo */
+            border-color: var(--accent);
+            color: var(--accent);
+
+            background: rgba(0, 242, 254, 0.1); /* Brillo interno muy suave */
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); /* Efecto de resplandor neón */
+
+            transform: translateY(-2px); /* Pequeña elevación para dar feedback */
+        }
 
         .main-container { flex: 1; display: flex; flex-direction: column; padding: 20px; overflow: hidden; }
-        
+
+	.dashboard-top {
+	    display: flex;
+	    gap: 20px;
+	    padding: 20px;
+	    background: rgba(255, 255, 255, 0.01);
+	    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	}
+	.preview-panel {
+	    flex: 1; /* El visor ocupa el resto del espacio */
+	}
+        .preview-container {
+            width: 100%;
+            height: 350px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            border: 1px dashed var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+	/* Ocultar reproductores por defecto */
+        #preview-img, #preview-video, #preview-audio, #placeholder-text {
+            display: none;
+            max-width: 100%;
+            max-height: 100%;
+        }
+	#placeholder-text {
+	    display: block; 
+	    opacity: 0.3;
+	    font-size: 0.85rem;
+	    text-transform: uppercase;
+	    letter-spacing: 1px;
+	}
         /* Botón Maestro Superior */
         .action-area { display: flex; justify-content: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .btn-auto { 
@@ -44,6 +118,19 @@
         .out-panel { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
         .out-header { background: rgba(0, 242, 254, 0.05); padding: 10px 20px; font-weight: 600; color: var(--accent); font-size: 0.8rem; letter-spacing: 1px; }
         .out-scroll { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+
+	/* Animación de Selección en Salidas */
+        .out-item {
+            font-size: 0.75rem; padding: 8px 15px; border-bottom: 1px solid rgba(255,255,255,0.02);
+            transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent;
+        }
+        .out-item:hover { background: rgba(255,255,255,0.05); }
+        
+        .selected-out-item {
+            background: rgba(0, 242, 254, 0.15) !important;
+            border-left: 3px solid var(--accent) !important;
+            opacity: 1 !important;
+        }
         
         .item-row { font-size: 0.7rem; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.02); opacity: 0.6; }
         .batch-tag { color: var(--accent); font-size: 0.65rem; font-weight: 600; margin-top: 10px; display: block; }
@@ -52,22 +139,33 @@
 <body>
 
     <nav class="nav-container">
-        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS | Tareas Automaticas</div>
         <div class="nav-links">
-            <a href="/convert/index"style="color: rgb(255, 230, 0); font-weight: 800">Inicio</a>
+            <a href="/convert/index">Inicio</a>
             <a href="/convert/images">Imágenes</a>
             <a href="/convert/songs">Música</a>
             <a href="/convert/videos">Videos</a>
             <a href="/convert/mixedjob">Tareas Mixtas</a>
             <a href="/convert/logs">Registros</a>
-            <a href="/dashboard"style="color: rgb(255, 230, 0); font-weight: 800">Telemetría</a>
+            <a href="/dashboard">Dashboard</a>
         </div>
     </nav>
 
     <div class="main-container">
-        <div class="action-area">
-            <button class="btn-auto" onclick="generateAutoTasks()">⚡ GENERAR TAREAS AUTOMÁTICAS</button>
-        </div>
+	<div class="dashboard-top">
+            <div class="action-area">
+		<button class="btn-auto" onclick="generateAutoTasks()">⚡ GENERAR TAREAS AUTOMÁTICAS</button>
+            </div>
+	    <div class="preview-panel">
+                <div class="preview-container">
+                    <p id="placeholder-text" style="opacity:0.3">Seleccione un archivo para visualizarlo</p>
+                    <img id="preview-img" src="" alt="Vista previa">
+                    <video id="preview-video" controls="" controlslist="nodownload"></video>
+                    <audio id="preview-audio" controls="" controlslist="nodownload noplaybackrate"></audio>
+                </div>
+            </div>
+        </div>	
+
 
         <div class="output-grid">
             <div class="out-panel">
@@ -86,17 +184,30 @@
     </div>
 
 <script>
+
     async function loadOuts() {
-        const cats = ['videos', 'songs', 'images'];
-        cats.forEach(async (cat) => {
-            const res = await fetch(`/dataset/out/${cat}`);
-            const data = await res.json();
-            const container = document.getElementById(`out-${cat}`);
-            container.innerHTML = '';
-            Object.entries(data.structure).sort().reverse().forEach(([folder, files]) => {
-                container.innerHTML += `<span class="batch-tag">🕒 ${folder}</span>`;
-                files.forEach(f => container.innerHTML += `<div class="item-row">📄 ${f}</div>`);
-            });
+        const categories = ['videos', 'songs', 'images'];
+        categories.forEach(async (cat) => {
+            try {
+                const res = await fetch(`/dataset/out/${cat}`);
+                const data = await res.json();
+                const container = document.getElementById(`out-${cat}`);
+                let html = '';
+                const sortedEntries = Object.entries(data.structure).sort().reverse();
+
+                sortedEntries.forEach(([folder, files]) => {
+                    html += `<div class="batch-tag">🕒 ${folder}</div>`;
+                    files.forEach(f => {
+                        const resultPath = `out/${cat}/${folder}/${f}`;
+                        // Pasamos 'this' para la animación de selección
+                        html += `
+                            <div class="out-item" onclick="updatePreview('${resultPath}', '${cat}', this)">
+                                📄 <span class="file-link">${f}</span>
+                            </div>`;
+                    });
+                });
+                container.innerHTML = html || '<div style="opacity:0.2; padding:10px;">Vacío</div>';
+            } catch (e) { console.error(e); }
         });
     }
 
@@ -127,12 +238,43 @@
                 await fetch('/enqueue', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ filename: file.path, action: actions[cat], batch_id: batchId })
+                    body: JSON.stringify({ filename: file.path, action: "AUTO_"+ actions[cat], batch_id: batchId })
                 });
             }
         }
         alert("¡Ráfaga automática enviada al clúster!");
         loadOuts();
+    }
+
+    function updatePreview(path, cat) {
+        const img = document.getElementById('preview-img');
+        const video = document.getElementById('preview-video');
+        const audio = document.getElementById('preview-audio');
+        const placeholder = document.getElementById('placeholder-text');
+
+        [img, video, audio, placeholder].forEach(el => el.style.display = 'none');
+        video.pause(); video.src = "";
+        audio.pause(); audio.src = "";
+
+        // CORRECCIÓN: Uso de backticks para la URL
+        const fullUrl = `/media/${path}`;
+
+        if (cat === 'images') {
+            img.src = fullUrl;
+            img.style.display = 'block';
+        }
+        else if (cat === 'videos') {
+            video.volume = 0.1;
+            video.src = fullUrl;
+            video.style.display = 'block';
+            video.load(); // Fuerza la carga de metadatos
+        }
+        else if (cat === 'songs') {
+            audio.volume = 0.1;
+            audio.src = fullUrl;
+            audio.style.display = 'block';
+            audio.load(); // Sincroniza el búfer de audio
+        }
     }
 
     window.onload = loadOuts;
