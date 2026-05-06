@@ -9,7 +9,7 @@ def get_audio_command(input_file, output_file, action):
         "audio_mp3_320": ["-c:a", "libmp3lame", "-b:a", "320k"],
         "audio_mp3_128": ["-c:a", "libmp3lame", "-b:a", "128k"],
         # Apple / Estándar móvil
-        "audio_aac": ["-c:a", "aac", "-b:a", "256k"],
+        "audio_aac": ["-c:a", "aac", "-b:a", "256k", "-ar", "44100", "-ac", "2"],
         "audio_m4a": ["-c:a", "aac", "-b:a", "320k"],
         # Formatos Abiertos / Web
         "audio_ogg": ["-c:a", "libvorbis", "-q:a", "6"],
@@ -18,7 +18,7 @@ def get_audio_command(input_file, output_file, action):
         "audio_flac": ["-c:a", "flac", "-compression_level", "5"],
         "audio_aiff": ["-c:a", "pcm_s16be"], # Formato AIFF sin pérdida
         # Simulación de LDAC (Hi-Res Audio 96kHz/24-bit)
-        "audio_hires_sim": ["-c:a", "flac", "-sample_fmt", "s24", "-ar", "96000"],
+        "audio_hires_sim": ["-c:a", "flac", "-bits_per_raw_sample", "24", "-ar", "96000"],
         # Formatos Legados / Voz
         "audio_amr": ["-c:a", "libopencore_amrnb", "-ar", "8000", "-ab", "12.2k", "-ac", "1"]
     }

@@ -3,6 +3,16 @@ import subprocess
 import os
 
 def get_ffmpeg_command(input_file, output_file, action):
+    # --- NUEVA LÓGICA: Extracción de Audio ---
+    if action == "video_extract_audio":
+        return [
+            "ffmpeg", "-y", "-i", input_file,
+            "-vn",                  # Desactiva el flujo de video
+            "-c:a", "libmp3lame",   # Codificador MP3
+            "-q:a", "2",            # Calidad alta (VBR ~190kbps)
+            output_file
+        ]
+    
     # Diccionario de resoluciones solicitadas
     res_map = {
         "video_360p": "scale=-2:360",

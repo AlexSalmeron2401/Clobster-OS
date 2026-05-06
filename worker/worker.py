@@ -12,8 +12,8 @@ import requests
 # ==============================================================================
 # 1. CONFIGURACIÓN
 # ==============================================================================
-MASTER_IP = "IP NODO MASTER"
-REDIS_PORT = "PUERTO POR DEFECTO"
+MASTER_IP = "192.168.1.84"
+REDIS_PORT = 6379
 TIMEOUT_RECONEXION = 120
 WORKER_NAME = socket.gethostname()
 
@@ -132,7 +132,8 @@ while True:
             if job_pack:
                 cola_origen, message = job_pack
                 task = json.loads(message)
-                action = task['action']
+                actionPATH = task['action']
+                action=actionPATH.replace("AUTO_","")
                 
                 # Inteligencia de Selección de Motor y Categoría
                 if action.startswith("audio_"):
