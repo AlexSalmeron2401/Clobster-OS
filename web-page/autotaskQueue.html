@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Clobster OS | AutoTask Queue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+	:root {
+            --accent: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --bg: rgb(10, 112, 114);
+        }
+        body { 
+            margin: 0; 
+            background: var(--bg);
+            color: white; 
+            font-family: 'Inter', sans-serif;
+            display: flex; 
+            flex-direction: column;
+            height: 100vh; 
+            overflow: hidden;
+        }
+
+        .nav-container {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            border-bottom: 2px solid rgba(200, 200, 200, 0.8);
+        }
+
+	.logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
+        .nav-links { display: flex; gap: 10px; }
+        .nav-links a {
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 2px solid rgba(200, 200, 200, 0.8);
+            padding: 5px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            text-align: center;
+        }
+
+        .nav-links a:hover {
+            /* Al pasar el mouse, el borde "se enciende" con el color del logo */
+            border-color: var(--accent);
+            color: var(--accent);
+
+            background: rgba(0, 242, 254, 0.1); /* Brillo interno muy suave */
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); /* Efecto de resplandor neón */
+
+            transform: translateY(-2px); /* Pequeña elevación para dar feedback */
+        }
+
+        .main-container { flex: 1; display: flex; flex-direction: column; padding: 20px; overflow: hidden; }
+
+	.dashboard-top {
+	    display: flex;
+	    gap: 20px;
+	    padding: 20px;
+	    background: rgba(255, 255, 255, 0.01);
+	    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	}
+	.preview-panel {
+	    flex: 1; /* El visor ocupa el resto del espacio */
+	}
+        .preview-container {
+            width: 100%;
+            height: 350px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            border: 1px dashed var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+	/* Ocultar reproductores por defecto */
+        #preview-img, #preview-video, #preview-audio, #placeholder-text {
+            display: none;
+            max-width: 100%;
+            max-height: 100%;
+        }
+	#placeholder-text {
+	    display: block; 
+	    opacity: 0.3;
+	    font-size: 0.85rem;
+	    text-transform: uppercase;
+	    letter-spacing: 1px;
+	}
+        /* Botón Maestro Superior */
+        .action-area { display: flex; justify-content: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .btn-auto { 
+            background: var(--accent); color: black; border: none; padding: 20px 40px; border-radius: 15px; 
+            font-weight: 600; cursor: pointer; font-size: 1.1rem; letter-spacing: 1px; transition: 0.3s;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+        }
+        .btn-auto:hover { transform: scale(1.02); box-shadow: 0 0 40px var(--accent); }
+
+        /* Paneles de Salida Verticales */
+        .output-grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; overflow: hidden; }
+        .out-panel { background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
+        .out-header { background: rgba(0, 242, 254, 0.05); padding: 10px 20px; font-weight: 600; color: var(--accent); font-size: 0.8rem; letter-spacing: 1px; }
+        .out-scroll { flex: 1; overflow-y: auto; padding: 15px; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+
+	/* Animación de Selección en Salidas */
+        .out-item {
+            font-size: 0.75rem; padding: 8px 15px; border-bottom: 1px solid rgba(255,255,255,0.02);
+            transition: all 0.2s ease; cursor: pointer; border-left: 3px solid transparent;
+        }
+        .out-item:hover { background: rgba(255,255,255,0.05); }
+        
+        .selected-out-item {
+            background: rgba(0, 242, 254, 0.15) !important;
+            border-left: 3px solid var(--accent) !important;
+            opacity: 1 !important;
+        }
+        
+        .item-row { font-size: 0.7rem; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.02); opacity: 0.6; }
+        .batch-tag { color: var(--accent); font-size: 0.65rem; font-weight: 600; margin-top: 10px; display: block; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-container">
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS | Tareas Automaticas</div>
+        <div class="nav-links">
+            <a href="/convert/index">Inicio</a>
+            <a href="/convert/images">Imágenes</a>
+            <a href="/convert/songs">Música</a>
+            <a href="/convert/videos">Videos</a>
+            <a href="/convert/mixedjob">Tareas Mixtas</a>
+            <a href="/convert/logs">Registros</a>
+            <a href="/dashboard">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+	<div class="dashboard-top">
+            <div class="action-area">
+		<button class="btn-auto" onclick="generateAutoTasks()">⚡ GENERAR TAREAS AUTOMÁTICAS</button>
+            </div>
+	    <div class="preview-panel">
+                <div class="preview-container">
+                    <p id="placeholder-text" style="opacity:0.3">Seleccione un archivo para visualizarlo</p>
+                    <img id="preview-img" src="" alt="Vista previa">
+                    <video id="preview-video" controls="" controlslist="nodownload"></video>
+                    <audio id="preview-audio" controls="" controlslist="nodownload noplaybackrate"></audio>
+                </div>
+            </div>
+        </div>	
+
+
+        <div class="output-grid">
+            <div class="out-panel">
+                <div class="out-header">🎬 VIDEOS (AUTOMÁTICO: 360p)</div>
+                <div class="out-scroll" id="out-videos"></div>
+            </div>
+            <div class="out-panel">
+                <div class="out-header">🎵 CANCIONES (AUTOMÁTICO: MP3)</div>
+                <div class="out-scroll" id="out-songs"></div>
+            </div>
+            <div class="out-panel">
+                <div class="out-header">🖼️ IMÁGENES (AUTOMÁTICO: GRAY)</div>
+                <div class="out-scroll" id="out-images"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+    async function loadOuts() {
+        const categories = ['videos', 'songs', 'images'];
+        categories.forEach(async (cat) => {
+            try {
+                const res = await fetch(`/dataset/out/${cat}`);
+                const data = await res.json();
+                const container = document.getElementById(`out-${cat}`);
+                let html = '';
+                const sortedEntries = Object.entries(data.structure).sort().reverse();
+
+                sortedEntries.forEach(([folder, files]) => {
+                    html += `<div class="batch-tag">🕒 ${folder}</div>`;
+                    files.forEach(f => {
+                        const resultPath = `out/${cat}/${folder}/${f}`;
+                        // Pasamos 'this' para la animación de selección
+                        html += `
+                            <div class="out-item" onclick="updatePreview('${resultPath}', '${cat}', this)">
+                                📄 <span class="file-link">${f}</span>
+                            </div>`;
+                    });
+                });
+                container.innerHTML = html || '<div style="opacity:0.2; padding:10px;">Vacío</div>';
+            } catch (e) { console.error(e); }
+        });
+    }
+
+    async function generateAutoTasks() {
+        if(!confirm("¿Deseas iniciar la generación automática masiva?")) return;
+        
+        const batchId = "AUTO-" + new Date().toLocaleString('es-CR').replace(/[/, :]/g, '-').slice(0, 16);
+        
+        // Configuraciones de cantidad (Rangos del enunciado)
+        const counts = {
+            videos: Math.floor(Math.random() * (12 - 7 + 1)) + 7,
+            songs: Math.floor(Math.random() * (50 - 10 + 1)) + 10,
+            images: Math.floor(Math.random() * (120 - 50 + 1)) + 50
+        };
+
+        // Acciones Fijas
+        const actions = { videos: 'video_360p', songs: 'audio_mp3_320', images: 'img_gray' };
+
+        for (const cat of Object.keys(counts)) {
+            const res = await fetch(`/dataset/raw/${cat}`);
+            const data = await res.json();
+            
+            // Selección Aleatoria (Shuffle)
+            const shuffled = data.files.sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, counts[cat]);
+
+            for (const file of selected) {
+                await fetch('/enqueue', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ filename: file.path, action: "AUTO_"+ actions[cat], batch_id: batchId })
+                });
+            }
+        }
+        alert("¡Ráfaga automática enviada al clúster!");
+        loadOuts();
+    }
+
+    function updatePreview(path, cat) {
+        const img = document.getElementById('preview-img');
+        const video = document.getElementById('preview-video');
+        const audio = document.getElementById('preview-audio');
+        const placeholder = document.getElementById('placeholder-text');
+
+        [img, video, audio, placeholder].forEach(el => el.style.display = 'none');
+        video.pause(); video.src = "";
+        audio.pause(); audio.src = "";
+
+        // CORRECCIÓN: Uso de backticks para la URL
+        const fullUrl = `/media/${path}`;
+
+        if (cat === 'images') {
+            img.src = fullUrl;
+            img.style.display = 'block';
+        }
+        else if (cat === 'videos') {
+            video.volume = 0.1;
+            video.src = fullUrl;
+            video.style.display = 'block';
+            video.load(); // Fuerza la carga de metadatos
+        }
+        else if (cat === 'songs') {
+            audio.volume = 0.1;
+            audio.src = fullUrl;
+            audio.style.display = 'block';
+            audio.load(); // Sincroniza el búfer de audio
+        }
+    }
+
+    window.onload = loadOuts;
+    setInterval(loadOuts, 10000);
+</script>
+</body>
+</html>

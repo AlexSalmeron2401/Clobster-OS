@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clobster OS | Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --bg: rgb(10, 112, 114);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+	    background: var(--bg) fixed;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+	    justify-content: center; 
+        }
+
+        .nav-container { 
+            width: 100%; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 20px 50px; 
+            box-sizing: border-box;
+            position: sticky;
+            top: 0;
+            background: rgba(20, 20, 25, 0.7);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            border-bottom: 2px solid rgba(200, 200, 200, 0.8);
+        }
+
+        .logo { font-weight: 600; letter-spacing: 4px; color: var(--accent); font-size: 2rem; }
+        .nav-links { display: flex; gap: 30px; }
+
+        .nav-links a {
+	    text-decoration: none;
+	    background: rgba(255, 255, 255, 0.05);
+	    color: white;
+	    border: 2px solid rgba(200, 200, 200, 0.8);
+	    padding: 10px 25px;
+	    border-radius: 8px;
+	    backdrop-filter: blur(5px);
+	    font-weight: 600;
+	    font-size: 0.85rem;
+	    text-transform: uppercase;
+	    letter-spacing: 2px;
+    
+	    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	    display: inline-block;
+	}
+	.nav-links a:hover {
+	    /* Al pasar el mouse, el borde "se enciende" con el color del logo */
+	    border-color: var(--accent); 
+	    color: var(--accent);
+    
+	    background: rgba(0, 242, 254, 0.1); /* Brillo interno muy suave */
+	    box-shadow: 0 0 20px rgba(0, 242, 254, 0.2); /* Efecto de resplandor neón */
+    
+	    transform: translateY(-2px); /* Pequeña elevación para dar feedback */
+	}
+
+        .hero {
+	    text-align: center;
+	    margin-top: 80px;
+	    max-width: 800px;
+	    padding: 0 20px;
+	}
+        .hero h1 {
+	    font-size: 5.5rem;
+	    font-weight: 400;
+	    margin: 0;
+	    letter-spacing: 2px;
+	}
+        .hero span { color: var(--accent); font-weight: 800; }
+	.subtitle {
+	    opacity: 0.5;
+	    letter-spacing: 5px;
+	    font-size: 0.9rem;
+	    margin-top: 10px;
+	}
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 90%;
+            max-width: 1200px;
+            margin: 60px 0;
+        }
+
+        .module-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            color: white;
+            transition: 0.4s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .module-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-10px);
+            background: rgba(0, 242, 254, 0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .icon { font-size: 3rem; margin-bottom: 20px; }
+        .module-card h3 { margin: 10px 0; font-weight: 600; }
+        .module-card p { font-size: 0.9rem; opacity: 0.5; line-height: 1.6; }
+
+        .info-section { width: 90%; max-width: 1000px; margin-bottom: 100px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .glass-card { background: var(--glass); border: 1px solid var(--border); padding: 40px; border-radius: 30px; }
+        .glass-card h2 { color: var(--accent); margin-top: 0; }
+        .glass-card p { opacity: 0.6; line-height: 1.8; font-size: 0.95rem; }
+
+        .team-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+        .member { padding: 15px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <nav class="nav-container">
+        <div class="logo" style="color: rgba(0, 255, 255, 1.0;">C-OS</div>
+        <div class="nav-links">
+	    <a href="/dashboard">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>CLOBSTER <span>OS</span></h1>
+        <div class="subtitle">SISTEMA MULTIMEDIA DISTRIBUIDO</div>
+    </div>
+
+    <div class="modules-grid">
+
+	<a href="/convert/images" class="module-card">
+            <div class="icon">🖼️</div>
+            <h3>Motor de Imágenes</h3>
+            <p>Reescalado desde 360p hasta 4K y filtros básicos.</p>
+        </a>
+
+	<a href="/convert/songs" class="module-card">
+            <div class="icon">🎵</div>
+            <h3>Motor de Audio</h3>
+            <p>Conversión a multiples formatos de alta fidelidad y compresión inteligente.</p>
+        </a>
+
+        <a href="/convert/videos" class="module-card">
+            <div class="icon">🎬</div>
+            <h3>Motor de Video</h3>
+            <p>Elija si quiere subir o reducir la calidad de su video con FFmpeg.</p>
+        </a>
+
+	<a href="/convert/autotaskQueue" class="module-card">
+            <div class="icon">🤖</div>
+            <h3>Motor de Tareas Automaticas</h3>
+            <p>Generación automática de tareas con selección aleatoria y parámetros fijos. Para exigir el sistema y ver de su rendimiento bajo carga.</p>
+        </a>
+
+        <a href="/convert/mixedjob" class="module-card">
+            <div class="icon">🚀</div>
+            <h3>Motor de Tareas Mixto</h3>
+            <p>Si en lugar de procesar todo por separado, puedes hacerlo desde un mismo panel.</p>
+        </a>
+	
+	<a href="/convert/logs" class="module-card">
+            <div class="icon">📜</div>
+            <h3>Registros del Clúster</h3>
+            <p>Revisa que nodo worker procesó la tarea, su duración y la hora en que entró en cola.</p>
+        </a>
+
+        <a href="/dashboard" class="module-card">
+            <div class="icon">📊</div>
+            <h3>Cluster Dashboard</h3>
+            <p>Telemetría en tiempo real, carga de CPU y estado de los Workers.</p>
+        </a>
+
+    </div>
+
+    <div class="info-section">
+        <div class="glass-card">
+            <h2>Visión del Proyecto</h2>
+            <p>
+                Clobster OS es una plataforma distribuida diseñada para la transcodificación y manipulación de archivos multimedia de alto rendimiento. 
+                Utilizando un modelo de <strong>Master-Worker</strong>, el sistema centraliza la gestión de tareas en un nodo Master, el cual distribuye la carga de trabajo 
+                hacia una red heterogénea de nodos Workers de forma asíncrona.
+            </p>
+        </div>
+
+        <div class="glass-card">
+            <h2>Ingeniería Distribuida</h2>
+            <p>
+                El corazón del sistema reside en una cola de mensajes gestionada por <strong>Redis</strong>, permitiendo que nodos con diferentes capacidades de cómputo, desde procesadores modernos hasta hardware legacy, 
+                colaboren en tiempo real. La comunicación se realiza mediante telemetría que proporcionan visibilidad total sobre el clúster.
+            </p>
+        </div>
+
+        <div class="glass-card" style="grid-column: span 2;">
+            <h2>Desarrolladores</h2>
+            <div class="team-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="member"><span>Alex Salmerón Madrigal</span></div>
+                <div class="member"><span>Jose Armando Cordero Miranda</span></div>
+                <div class="member"><span>Cristian Corella Reyes</span></div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
